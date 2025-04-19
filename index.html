@@ -2,32 +2,24 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <!-- ピンチ・ダブルタップズームを無効化 -->
   <meta name="viewport"
-        content="width=device-width,
-                 initial-scale=1.0,
-                 maximum-scale=1.0,
-                 user-scalable=no">
+        content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
   <title>焼き鳥クイズ</title>
-
   <style>
     /* ===== 共通 ===== */
-    html,body{
-      margin:0;padding:0;
-      touch-action:manipulation; -ms-touch-action:manipulation;
-      -webkit-user-select:none; user-select:none;
-      -webkit-tap-highlight-color:transparent;
-      background:#fffaf0;font-family:Arial, sans-serif;text-align:center;
-    }
+    html,body{margin:0;padding:0;touch-action:manipulation;-webkit-user-select:none;
+      user-select:none;-webkit-tap-highlight-color:transparent;background:#fffaf0;
+      font-family:Arial,sans-serif;text-align:center;}
 
-    /* ===== 画面切替用 ===== */
-    .screen{position:fixed;inset:0;display:none;flex-direction:column;justify-content:center;align-items:center;}
+    /* ===== 画面切替 ===== */
+    .screen{position:fixed;inset:0;display:none;flex-direction:column;
+      justify-content:center;align-items:center;}
     .screen.active{display:flex;}
 
     /* ===== スタート画面 ===== */
     h1{font-size:28px;margin:0 0 20px;color:#000;}
     #startScreen button{margin:8px 0;padding:14px 22px;font-size:20px;color:#fff;
-      background:#d2691e;border:none;border-radius:10px;cursor:pointer;white-space:nowrap;}
+      background:#d2691e;border:none;border-radius:10px;cursor:pointer;}
     #startScreen button:active{background:#a0522d;transform:scale(.96);}
 
     /* ===== クイズ画面 ===== */
@@ -35,32 +27,45 @@
     #question{font-size:22px;font-weight:bold;margin-bottom:10px;}
     #timer{font-size:26px;color:#d2691e;margin-bottom:8px;font-weight:bold;}
 
-    /* ↓ 追加：結果表示用スタイル */
-    #result{min-height:38px;font-size:22px;font-weight:bold;margin-bottom:8px;display:flex;justify-content:center;align-items:center;gap:8px;}
+    #result{min-height:38px;font-size:22px;font-weight:bold;margin-bottom:8px;
+      display:flex;justify-content:center;align-items:center;gap:8px;}
     .result-ok{color:#22c55e;}
     .result-ng{color:#ef4444;}
-    .result-icon{font-size:30px;vertical-align:middle;}
+    .result-icon{font-size:30px;}
 
-    #display{width:120px;margin:10px auto 14px;padding:8px 0;font-size:26px;border:2px solid #8b4513;border-radius:10px;background:#fff;}
+    #display{width:120px;margin:10px auto 14px;padding:8px 0;font-size:26px;
+      border:2px solid #8b4513;border-radius:10px;background:#fff;}
 
     .control-buttons{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:260px;margin:0 auto 14px;}
-    .control-buttons button{padding:20px;font-size:20px;background:#d2691e;color:#fff;border:none;border-radius:10px;cursor:pointer;}
-    .control-buttons button:active{background:#a0522d;transform:scale(.96);}
+    .control-buttons button,
+    .numpad button{padding:20px;font-size:20px;background:#d2691e;color:#fff;border:none;border-radius:10px;cursor:pointer;}
+    .control-buttons button:active,
+    .numpad button:active{background:#a0522d;transform:scale(.96);}
 
     .numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:240px;margin:0 auto;}
-    .numpad button{padding:18px;font-size:20px;background:#d2691e;color:#fff;border:none;border-radius:10px;cursor:pointer;aspect-ratio:1/1;}
+    .numpad button{aspect-ratio:1/1;}
     .numpad button.zero{grid-column:span 3;aspect-ratio:auto;}
-    .numpad button:active{background:#a0522d;transform:scale(.96);}
+
+    /* ===== メニューオーバーレイ ===== */
+    #menuOverlay{position:absolute;inset:0;background:rgba(0,0,0,.5);
+      display:none;justify-content:center;align-items:center;z-index:10;}
+    #menuOverlay div{background:#fff;padding:20px;border-radius:12px;text-align:center;}
+    #menuOverlay button{margin:10px;padding:10px 20px;font-size:16px;color:#fff;background:#d2691e;border:none;border-radius:8px;}
+    #menuOverlay button:active{background:#a0522d;}
 
     /* ===== 終了画面 ===== */
     #scoreText{margin:14px 0;font-size:18px;line-height:1.6;}
-    #endScreen button{
-    padding:14px 22px;font-size:20px;color:#fff;
-    background:#d2691e;border:none;border-radius:10px;cursor:pointer;
-  }
-  #endScreen button:active{
-    background:#a0522d;transform:scale(.96);
-  }
+    #endScreen button{padding:14px 22px;font-size:20px;color:#fff;
+      background:#d2691e;border:none;border-radius:10px;cursor:pointer;}
+    #endScreen button:active{background:#a0522d;transform:scale(.96);}
+    #endHeading{
+  max-width:90%;           /* 画面横幅に余白を残す */
+  padding:0 10px;
+  line-height:1.4;
+  white-space:pre-wrap;    /* \n を改行として扱う */
+  word-break:keep-all;     /* 日本語をできるだけ単語単位で折り返し */
+  overflow-wrap:break-word;/* 英数字が長くても折り返す */
+}
   </style>
 </head>
 <body>
@@ -73,10 +78,14 @@
 
   <!-- クイズ画面 -->
   <div id="quizScreen" class="screen">
+    <!-- メニューボタン -->
+    <button onclick="openMenu()" style="position:absolute;top:10px;right:10px;
+      background:none;border:none;font-size:32px;color:#8b4513;">☰</button>
+
     <div id="progress"></div>
     <div id="question"></div>
     <div id="timer">10</div>
-    <div id="result"></div>     <!-- ★ 結果表示エリア -->
+    <div id="result"></div>
     <div id="display">0</div>
 
     <div class="control-buttons">
@@ -90,129 +99,123 @@
       <button onclick="addNumber(1)">1</button><button onclick="addNumber(2)">2</button><button onclick="addNumber(3)">3</button>
       <button class="zero" onclick="addNumber(0)">0</button>
     </div>
+
+    <!-- メニューオーバーレイ -->
+    <div id="menuOverlay">
+      <div>
+        <button onclick="returnToStart()">スタート画面に戻る</button><br>
+        <button onclick="closeMenu()">続ける</button><br>
+        <button onclick="endGameEarly()">終わる</button>
+      </div>
+    </div>
   </div>
 
   <!-- 終了画面 -->
   <div id="endScreen" class="screen">
-    <h1>クイズ終了！</h1>
+    <h1 id="endHeading"></h1>
     <p id="scoreText"></p>
     <button onclick="returnToStart()">スタート画面に戻る</button>
   </div>
 
   <script>
-    /* ==== データ ==== */
-    const yakitoriMenu={
-      "ねぎま（しお・タレ）":160,"つくね（しお・タレ）":200,"せせり":160,"肝（ねぎごま油・タレ）":200,
+    /* ===== データ ===== */
+    const yakitoriMenu={/* --- 省略：メニューはそのまま --- */"ねぎま（しお・タレ）":160,"つくね（しお・タレ）":200,"せせり":160,"肝（ねぎごま油・タレ）":200,
       "軍鶏むね":400,"軍鶏もも":400,"とりかわ（しお・タレ）":120,"ぼんじり":180,"チーズベーコン":350,"ウィンナー":220,
       "えびしそ":160,"親もも":160,"ハツ":180,"砂ずり":160,"豚肩ロース":300,"しいたけ":220,"ししゃも":140,
       "ピーマン肉詰め":180,"うずらベーコン":220,"しそ豚":220,"えのき巻":200,"ニラ巻":200,"ねぎハラミ":400,
       "鳥賊のくちばし":220,"ハツモト":280,"軍鶏かわ":280,"いかだ（酢みそ・タレ）":180,"なんこつ":180,
-      "アスパラ巻":220,"じゃこ天串":160,"トマト巻":200,"れんこん肉詰め":250,"和牛ホルモン":330,"ささみ":200
-    };
+      "アスパラ巻":220,"じゃこ天串":160,"トマト巻":200,"れんこん肉詰め":250,"和牛ホルモン":330,"ささみ":200};
 
-    /* ==== 状態変数 ==== */
+    /* ===== 状態変数・要素 ===== */
     let mode,total,items,used,q,current='0',score,timerID,timeLeft,wrong=[];
+    const qs=document,pro=qs.getElementById('progress'),que=qs.getElementById('question'),
+          tim=qs.getElementById('timer'),dis=qs.getElementById('display'),res=qs.getElementById('result'),
+          startScr=qs.getElementById('startScreen'),quizScr=qs.getElementById('quizScreen'),
+          endScr=qs.getElementById('endScreen'),scoreTxt=qs.getElementById('scoreText'),
+          menuOvl=qs.getElementById('menuOverlay');
 
-    /* ==== 要素 ==== */
-    const qs=document;
-    const prog=qs.getElementById('progress');
-    const ques=qs.getElementById('question');
-    const timr=qs.getElementById('timer');
-    const disp=qs.getElementById('display');
-    const res =qs.getElementById('result');
-    const startScr=qs.getElementById('startScreen');
-    const quizScr =qs.getElementById('quizScreen');
-    const endScr  =qs.getElementById('endScreen');
-    const scoreTxt=qs.getElementById('scoreText');
+    /* ===== メニュー操作 ===== */
+    function openMenu(){menuOvl.style.display='flex';}
+    function closeMenu(){menuOvl.style.display='none';}
 
-    /* ==== ゲーム開始 ==== */
+    /* ===== ゲーム開始 ===== */
     function startGame(m){
       mode=m;total=(m==='15')?15:Object.keys(yakitoriMenu).length;
       items=Object.keys(yakitoriMenu);used=[];score=0;wrong=[];
-      startScr.classList.remove('active');
-      endScr.classList.remove('active');
-      quizScr.classList.add('active');
-      nextQuestion();
+      startScr.classList.remove('active');endScr.classList.remove('active');
+      quizScr.classList.add('active');nextQuestion();
     }
 
-    /* ==== 出題 ==== */
+    /* ===== 出題 ===== */
     function nextQuestion(){
       clearInterval(timerID);
       if(used.length===total){finish();return;}
       do{q=items[Math.floor(Math.random()*items.length)];}while(used.includes(q));
       used.push(q);
-      ques.textContent=`${q} の値段は？`;
-      prog.textContent=`${used.length}/${total}問目`;
-      current='0';disp.textContent='0';
-      res.textContent='';res.className='';
-      startTimer();
+      que.textContent=`${q} の値段は？`;
+      pro.textContent=`${used.length}/${total}問目`;
+      current='0';dis.textContent='0';res.textContent='';res.className='';startTimer();
     }
 
-    /* ==== タイマー ==== */
+    /* ===== タイマー ===== */
     function startTimer(){
-      timeLeft=10;timr.textContent=timeLeft;
-      timerID=setInterval(()=>{
-        timeLeft--;timr.textContent=timeLeft;
-        if(timeLeft===0){clearInterval(timerID);showResult(false,true);}
-      },1000);
+      timeLeft=10;tim.textContent=timeLeft;
+      timerID=setInterval(()=>{timeLeft--;tim.textContent=timeLeft;
+        if(timeLeft===0){clearInterval(timerID);showResult(false,true);}},1000);
     }
 
-    /* ==== 入力 ==== */
-    function addNumber(n){
-      if(current==='0')current=''+n;
-      else if(current.length<4)current+=n;
-      disp.textContent=current;
-    }
-    function clearAnswer(){current='0';disp.textContent='0';}
+    /* ===== 入力 ===== */
+    function addNumber(n){current=(current==='0')?''+n:(current.length<4?current+n:current);dis.textContent=current;}
+    function clearAnswer(){current='0';dis.textContent='0';}
 
-    /* ==== 判定 ==== */
+    /* ===== 判定 ===== */
     function checkAnswer(){
+      if(current==='0'){res.innerHTML='<span class="result-icon">✖</span>解答を入力してください';res.className='result-ng';return;}
       clearInterval(timerID);
       const ans=yakitoriMenu[q];
-
-      // 未入力
-      if(current==='0'){
-        res.innerHTML='<span class="result-icon">✖</span>解答を入力してください';
-        res.className='result-ng';
-        return;
-      }
-
-      if(parseInt(current)===ans){
-        score++;
-        showResult(true,false,ans);
-      }else{
-        wrong.push(`${q}：正解 ${ans} 円`);
-        showResult(false,false,ans);
-      }
+      if(parseInt(current)===ans){score++;showResult(true,false,ans);}
+      else{wrong.push(`${q}：正解 ${ans} 円`);showResult(false,false,ans);}
     }
 
-    /* 表示まとめ */
     function showResult(ok,timeout=false,ans=0){
-      if(timeout){
-        res.innerHTML=`<span class="result-icon">✖</span>時間切れ！ 正解は ${ans} 円です`;
-        res.className='result-ng';
-        wrong.push(`${q}：タイムアウト`);
-      }else if(ok){
-        res.innerHTML='<span class="result-icon">⭕</span>正解！';
-        res.className='result-ok';
-      }else{
-        res.innerHTML=`<span class="result-icon">✖</span>不正解！ 正解は ${ans} 円です`;
-        res.className='result-ng';
-      }
+      if(timeout){res.innerHTML=`<span class="result-icon">✖</span>時間切れ！ 正解は ${ans} 円です`;res.className='result-ng';wrong.push(`${q}：タイムアウト`);}
+      else if(ok){res.innerHTML='<span class="result-icon">⭕</span>正解！';res.className='result-ok';}
+      else{res.innerHTML=`<span class="result-icon">✖</span>不正解！ 正解は ${ans} 円です`;res.className='result-ng';}
       setTimeout(nextQuestion,800);
     }
 
-    /* ==== 終了 ==== */
+    /* ===== メニュー「終わる」 ===== */
+    function endGameEarly(){clearInterval(timerID);finish();}
+
+    /* ===== 終了 ===== */
     function finish(){
-      const wrongStr=wrong.length?'<strong>間違えた問題</strong><br>'+wrong.join('<br>'):'全問正解！';
-      scoreTxt.innerHTML=`${total}問中${score}問正解！<br><br>${wrongStr}`;
-      quizScr.classList.remove('active');
-      endScr.classList.add('active');
-    }
-    function returnToStart(){
-      endScr.classList.remove('active');
-      startScr.classList.add('active');
-    }
+  clearInterval(timerID);
+
+  const answered = used.length;
+  const rate     = answered ? (score / answered) * 100 : 0;
+
+  // 正答率に応じたコメント  (★ 0–29% だけ <br> を入れる)
+  let comment;
+  if      (rate === 100) comment = '焼き鳥奉行！パーフェクト！';
+  else if (rate >= 90)   comment = 'ベテラン焼き師！あと一歩！';
+  else if (rate >= 70)   comment = '串打ち職人見習い！いい線いってる！';
+  else if (rate >= 50)   comment = '焼き鳥好きレベルアップ中！';
+  else if (rate >= 30)   comment = 'これからが修行の本番！';
+  else                   comment = '修行あるのみ！<br>まずはメニューを覚えよう';  // ←★
+
+  /* 「全問正解！」表示ロジックはそのまま */
+  const wrongStr =
+      wrong.length ? '<strong>間違えた問題</strong><br>'+wrong.join('<br>')
+                   : (answered > 0 && score === answered ? '全問正解！' : '');
+
+  document.getElementById('endHeading').innerHTML = comment.replace(/\n/g,'<br>');
+  scoreTxt.innerHTML = `${total}問中${score}問正解！<br><br>${wrongStr}`;
+
+  menuOvl.style.display = 'none';
+  quizScr.classList.remove('active');
+  endScr.classList.add('active');
+}
+    function returnToStart(){menuOvl.style.display='none';endScr.classList.remove('active');startScr.classList.add('active');}
   </script>
 </body>
 </html>
