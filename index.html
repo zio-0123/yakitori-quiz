@@ -2,23 +2,21 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <!-- ダブルタップ・ピンチズームをすべて無効化 -->
+  <!-- ピンチ・ダブルタップズームを無効化 -->
   <meta name="viewport"
         content="width=device-width,
                  initial-scale=1.0,
                  maximum-scale=1.0,
                  user-scalable=no">
-
   <title>焼き鳥クイズ</title>
 
   <style>
-    /* ===== 全ページ共通 ===== */
+    /* ===== 共通 ===== */
     html,body{
       margin:0;padding:0;
-      /* iOS / Android どちらでもダブルタップズームを抑止 */
-      touch-action: manipulation;          /* Chrome / Edge / Android */
-      -ms-touch-action: manipulation;      /* 旧 Edge */
-      -webkit-user-select:none;            /* iOS Safari 選択禁止 */
+      touch-action:manipulation;          /* ズーム抑止 */
+      -ms-touch-action:manipulation;
+      -webkit-user-select:none;
       user-select:none;
       -webkit-tap-highlight-color:transparent;
       background:#fffaf0;
@@ -26,7 +24,7 @@
       text-align:center;
     }
 
-    /* ===== 基本レイアウト ===== */
+    /* ===== 画面切替用 ===== */
     .screen{
       position:fixed;inset:0;
       display:none;flex-direction:column;
@@ -34,8 +32,8 @@
     }
     .screen.active{display:flex;}
 
+    /* ===== スタート画面 ===== */
     h1{font-size:28px;margin:0 0 20px;color:#000;}
-    /* スタート画面ボタン */
     #startScreen button{
       margin:8px 0;padding:14px 22px;
       font-size:20px;color:#fff;
@@ -76,11 +74,9 @@
       padding:18px;font-size:20px;
       background:#d2691e;color:#fff;border:none;border-radius:10px;
       cursor:pointer;touch-action:manipulation;
-      aspect-ratio:1/1;           /* 正方形 */
+      aspect-ratio:1/1;
     }
-    /* 0 だけ横長 */
     .numpad button.zero{grid-column:span 3;aspect-ratio:auto;}
-
     .numpad button:active{background:#a0522d;transform:scale(.96);}
 
     /* ===== 終了画面 ===== */
@@ -129,92 +125,90 @@
   </div>
 
   <script>
-    /* ==== ズーム完全ブロック用リスナー ==== */
-    // 2本指以上のタッチでピンチ開始を阻止
-    document.addEventListener('touchstart',e=>{
-      if(e.touches.length>1){e.preventDefault();}
-    },{passive:false});
-    // 300ms以内のダブルタップを阻止
-    let lastTouchEnd=0;
-    document.addEventListener('touchend',e=>{
-      const now=Date.now();
-      if(now-lastTouchEnd<=300){e.preventDefault();}
-      lastTouchEnd=now;
-    },{passive:false});
-    // dblclick が発火する環境でもズーム阻止
-    document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
-
-    /* ==== クイズロジック ==== */
+    /* ==== データ ==== */
     const yakitoriMenu={
-      "ねぎま（しお・タレ）":160,"つくね（しお・タレ）":200,"せせり":160,"肝（ねぎごま油・タレ）":200,
-      "軍鶏むね":400,"軍鶏もも":400,"とりかわ（しお・タレ）":120,"ぼんじり":180,"チーズベーコン":350,
+      "ねぎま":160,"つくね":200,"せせり":160,"肝":200,
+      "軍鶏むね":400,"軍鶏もも":400,"とりかわ":120,"ぼんじり":180,"チーズベーコン":350,
       "ウィンナー":220,"えびしそ":160,"親もも":160,"ハツ":180,"砂ずり":160,"豚肩ロース":300,
       "しいたけ":220,"ししゃも":140,"ピーマン肉詰め":180,"うずらベーコン":220,"しそ豚":220,
       "えのき巻":200,"ニラ巻":200,"ねぎハラミ":400,"鳥賊のくちばし":220,"ハツモト":280,"軍鶏かわ":280,
-      "いかだ（酢みそ・タレ）":180,"なんこつ":180,"アスパラ巻":220,"じゃこ天串":160,"トマト巻":200,
+      "いかだ":180,"なんこつ":180,"アスパラ巻":220,"じゃこ天串":160,"トマト巻":200,
       "れんこん肉詰め":250,"和牛ホルモン":330,"ささみ":200
     };
 
-    let mode,total,menuItems,used,currentQ,currentA,score,timer,tl,interval,wrong=[];
-    const qs=document;
+    /* ==== 状態用変数 ==== */
+    let mode,total,items,used,q,ans,current='0',score,timerID,timeLeft,wrong=[];
 
+    /* ==== 要素取得 ==== */
+    const qs=document;
+    const progressEl=qs.getElementById('progress');
+    const questionEl=qs.getElementById('question');
+    const timerEl=qs.getElementById('timer');
+    const displayEl=qs.getElementById('display');
+    const startScreen=qs.getElementById('startScreen');
+    const quizScreen=qs.getElementById('quizScreen');
+    const endScreen=qs.getElementById('endScreen');
+    const scoreText=qs.getElementById('scoreText');
+
+    /* ==== ゲーム開始 ==== */
     function startGame(m){
-      mode=m;total=(m==='15'?15:Object.keys(yakitoriMenu).length);
-      menuItems=Object.keys(yakitoriMenu);used=[];score=0;wrong=[];
-      qs.getElementById('startScreen').classList.remove('active');
-      qs.getElementById('endScreen').classList.remove('active');
-      qs.getElementById('quizScreen').classList.add('active');
-      nextQ();
+      mode=m;
+      total=(m==='15')?15:Object.keys(yakitoriMenu).length;
+      items=Object.keys(yakitoriMenu);
+      used=[];score=0;wrong=[];
+      startScreen.classList.remove('active');
+      endScreen.classList.remove('active');
+      quizScreen.classList.add('active');
+      nextQuestion();
     }
 
-    function nextQ(){
-      clearInterval(interval);
-      if(used.length===total){endGame();return;}
-      do{currentQ=menuItems[Math.floor(Math.random()*menuItems.length)];}
-      while(used.includes(currentQ));
-      used.push(currentQ);
-      qs.getElementById('question').textContent=`${currentQ} の値段は？`;
-      qs.getElementById('progress').textContent=`${used.length}/${total}問目`;
-      currentA='0';qs.getElementById('display').textContent='0';
+    /* ==== 出題 ==== */
+    function nextQuestion(){
+      clearInterval(timerID);
+      if(used.length===total){return finish();}
+      do{q=items[Math.floor(Math.random()*items.length)];}while(used.includes(q));
+      used.push(q);
+      questionEl.textContent=`${q} の値段は？`;
+      progressEl.textContent=`${used.length}/${total}問目`;
+      current='0';displayEl.textContent='0';
       startTimer();
     }
 
-    function addNumber(n){
-      if(currentA==='0')currentA=''+n;
-      else if(currentA.length<4)currentA+=n;
-      qs.getElementById('display').textContent=currentA;
-    }
-
-    function clearAnswer(){currentA='0';qs.getElementById('display').textContent='0';}
-
-    function checkAnswer(){
-      clearInterval(interval);
-      const ans=yakitoriMenu[currentQ];
-      if(parseInt(currentA)===ans)score++;
-      else wrong.push(`${currentQ}：正解 ${ans} 円`);
-      setTimeout(nextQ,600);
-    }
-
+    /* ==== タイマー ==== */
     function startTimer(){
-      tl=10;const el=qs.getElementById('timer');el.textContent=tl;
-      interval=setInterval(()=>{
-        tl--;el.textContent=tl;
-        if(tl===0){clearInterval(interval);wrong.push(`${currentQ}：タイムアウト`);setTimeout(nextQ,600);}
+      timeLeft=10;timerEl.textContent=timeLeft;
+      timerID=setInterval(()=>{
+        timeLeft--;timerEl.textContent=timeLeft;
+        if(timeLeft===0){clearInterval(timerID);wrong.push(`${q}：タイムアウト`);setTimeout(nextQuestion,600);}
       },1000);
     }
 
-    function endGame(){
-      clearInterval(interval);
-      const txt=`${total}問中${score}問正解！<br><br>${wrong.length?
-        '<strong>間違えた問題</strong><br>'+wrong.join('<br>'):'全問正解！'}`;
-      qs.getElementById('scoreText').innerHTML=txt;
-      qs.getElementById('quizScreen').classList.remove('active');
-      qs.getElementById('endScreen').classList.add('active');
+    /* ==== 入力系 ==== */
+    function addNumber(n){
+      if(current==='0')current=''+n;
+      else if(current.length<4)current+=n;
+      displayEl.textContent=current;
+    }
+    function clearAnswer(){current='0';displayEl.textContent='0';}
+
+    function checkAnswer(){
+      clearInterval(timerID);
+      ans=yakitoriMenu[q];
+      if(parseInt(current)===ans)score++;
+      else wrong.push(`${q}：正解 ${ans} 円`);
+      setTimeout(nextQuestion,600);
     }
 
+    /* ==== 終了 ==== */
+    function finish(){
+      const wrongText=wrong.length?'<strong>間違えた問題</strong><br>'+wrong.join('<br>'):'全問正解！';
+      scoreText.innerHTML=`${total}問中${score}問正解！<br><br>${wrongText}`;
+      quizScreen.classList.remove('active');
+      endScreen.classList.add('active');
+    }
     function returnToStart(){
-      qs.getElementById('endScreen').classList.remove('active');
-      qs.getElementById('startScreen').classList.add('active');
+      endScreen.classList.remove('active');
+      startScreen.classList.add('active');
     }
   </script>
 </body>
