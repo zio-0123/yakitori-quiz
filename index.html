@@ -19,17 +19,29 @@
     .result-icon { font-size: 32px; animation: popIn 0.3s ease-out; }
     @keyframes popIn { 0% { transform: scale(0);} 70% { transform: scale(1.2);} 100% { transform: scale(1);} }
     #display { padding: 10px 20px; font-size: 26px; max-width: 90%; margin: 10px auto; border: 2px solid #8b4513; border-radius: 12px; background: white; pointer-events: none; text-align: center; }
-    .control-buttons, .numpad {
+    .control-buttons {
       display: grid;
       gap: 12px;
       max-width: 300px;
       width: 100%;
       margin: 10px auto;
+      grid-template-columns: 1fr 1fr;
+    }
+    .numpad {
+      display: grid;
+      gap: 12px;
+      max-width: 240px;
+      width: 100%;
+      margin: 10px auto;
+      grid-template-columns: repeat(3, 1fr);
     }
     .control-buttons { grid-template-columns: 1fr 1fr; }
     .numpad { grid-template-columns: repeat(3, 1fr); }
-    .numpad button { aspect-ratio: 1 / 1; }
-    /* 0ボタンは横長に戻す */
+    .numpad button {
+      aspect-ratio: 1 / 1;
+      padding: 15０px;
+      font-size: 20px;
+    }
     .numpad button:last-child { aspect-ratio: auto; }
     button { padding: 20px; font-size: 22px; border: none; background-color: #d2691e; color: white; border-radius: 12px; cursor: pointer; }
     button:active { background-color: #a0522d; transform: scale(0.95); }
