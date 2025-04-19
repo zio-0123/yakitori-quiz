@@ -14,33 +14,20 @@
     /* ===== 共通 ===== */
     html,body{
       margin:0;padding:0;
-      touch-action:manipulation;          /* ズーム抑止 */
-      -ms-touch-action:manipulation;
-      -webkit-user-select:none;
-      user-select:none;
+      touch-action:manipulation; -ms-touch-action:manipulation;
+      -webkit-user-select:none; user-select:none;
       -webkit-tap-highlight-color:transparent;
-      background:#fffaf0;
-      font-family:Arial, sans-serif;
-      text-align:center;
+      background:#fffaf0;font-family:Arial, sans-serif;text-align:center;
     }
 
     /* ===== 画面切替用 ===== */
-    .screen{
-      position:fixed;inset:0;
-      display:none;flex-direction:column;
-      justify-content:center;align-items:center;
-    }
+    .screen{position:fixed;inset:0;display:none;flex-direction:column;justify-content:center;align-items:center;}
     .screen.active{display:flex;}
 
     /* ===== スタート画面 ===== */
     h1{font-size:28px;margin:0 0 20px;color:#000;}
-    #startScreen button{
-      margin:8px 0;padding:14px 22px;
-      font-size:20px;color:#fff;
-      background:#d2691e;border:none;border-radius:10px;
-      cursor:pointer;white-space:nowrap;
-      touch-action:manipulation;
-    }
+    #startScreen button{margin:8px 0;padding:14px 22px;font-size:20px;color:#fff;
+      background:#d2691e;border:none;border-radius:10px;cursor:pointer;white-space:nowrap;}
     #startScreen button:active{background:#a0522d;transform:scale(.96);}
 
     /* ===== クイズ画面 ===== */
@@ -48,39 +35,32 @@
     #question{font-size:22px;font-weight:bold;margin-bottom:10px;}
     #timer{font-size:26px;color:#d2691e;margin-bottom:8px;font-weight:bold;}
 
-    #display{
-      width:120px;margin:10px auto 14px;
-      padding:8px 0;font-size:26px;
-      border:2px solid #8b4513;border-radius:10px;
-      background:#fff;
-    }
+    /* ↓ 追加：結果表示用スタイル */
+    #result{min-height:38px;font-size:22px;font-weight:bold;margin-bottom:8px;display:flex;justify-content:center;align-items:center;gap:8px;}
+    .result-ok{color:#22c55e;}
+    .result-ng{color:#ef4444;}
+    .result-icon{font-size:30px;vertical-align:middle;}
 
-    .control-buttons{
-      display:grid;grid-template-columns:1fr 1fr;gap:12px;
-      width:260px;margin:0 auto 14px;
-    }
-    .control-buttons button{
-      padding:20px;font-size:20px;
-      background:#d2691e;color:#fff;border:none;border-radius:10px;
-      cursor:pointer;touch-action:manipulation;
-    }
+    #display{width:120px;margin:10px auto 14px;padding:8px 0;font-size:26px;border:2px solid #8b4513;border-radius:10px;background:#fff;}
+
+    .control-buttons{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:260px;margin:0 auto 14px;}
+    .control-buttons button{padding:20px;font-size:20px;background:#d2691e;color:#fff;border:none;border-radius:10px;cursor:pointer;}
     .control-buttons button:active{background:#a0522d;transform:scale(.96);}
 
-    .numpad{
-      display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
-      width:240px;margin:0 auto;
-    }
-    .numpad button{
-      padding:18px;font-size:20px;
-      background:#d2691e;color:#fff;border:none;border-radius:10px;
-      cursor:pointer;touch-action:manipulation;
-      aspect-ratio:1/1;
-    }
+    .numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:240px;margin:0 auto;}
+    .numpad button{padding:18px;font-size:20px;background:#d2691e;color:#fff;border:none;border-radius:10px;cursor:pointer;aspect-ratio:1/1;}
     .numpad button.zero{grid-column:span 3;aspect-ratio:auto;}
     .numpad button:active{background:#a0522d;transform:scale(.96);}
 
     /* ===== 終了画面 ===== */
     #scoreText{margin:14px 0;font-size:18px;line-height:1.6;}
+    #endScreen button{
+    padding:14px 22px;font-size:20px;color:#fff;
+    background:#d2691e;border:none;border-radius:10px;cursor:pointer;
+  }
+  #endScreen button:active{
+    background:#a0522d;transform:scale(.96);
+  }
   </style>
 </head>
 <body>
@@ -96,6 +76,7 @@
     <div id="progress"></div>
     <div id="question"></div>
     <div id="timer">10</div>
+    <div id="result"></div>     <!-- ★ 結果表示エリア -->
     <div id="display">0</div>
 
     <div class="control-buttons">
@@ -104,15 +85,9 @@
     </div>
 
     <div class="numpad">
-      <button onclick="addNumber(7)">7</button>
-      <button onclick="addNumber(8)">8</button>
-      <button onclick="addNumber(9)">9</button>
-      <button onclick="addNumber(4)">4</button>
-      <button onclick="addNumber(5)">5</button>
-      <button onclick="addNumber(6)">6</button>
-      <button onclick="addNumber(1)">1</button>
-      <button onclick="addNumber(2)">2</button>
-      <button onclick="addNumber(3)">3</button>
+      <button onclick="addNumber(7)">7</button><button onclick="addNumber(8)">8</button><button onclick="addNumber(9)">9</button>
+      <button onclick="addNumber(4)">4</button><button onclick="addNumber(5)">5</button><button onclick="addNumber(6)">6</button>
+      <button onclick="addNumber(1)">1</button><button onclick="addNumber(2)">2</button><button onclick="addNumber(3)">3</button>
       <button class="zero" onclick="addNumber(0)">0</button>
     </div>
   </div>
@@ -127,88 +102,116 @@
   <script>
     /* ==== データ ==== */
     const yakitoriMenu={
-      "ねぎま":160,"つくね":200,"せせり":160,"肝":200,
-      "軍鶏むね":400,"軍鶏もも":400,"とりかわ":120,"ぼんじり":180,"チーズベーコン":350,
-      "ウィンナー":220,"えびしそ":160,"親もも":160,"ハツ":180,"砂ずり":160,"豚肩ロース":300,
-      "しいたけ":220,"ししゃも":140,"ピーマン肉詰め":180,"うずらベーコン":220,"しそ豚":220,
-      "えのき巻":200,"ニラ巻":200,"ねぎハラミ":400,"鳥賊のくちばし":220,"ハツモト":280,"軍鶏かわ":280,
-      "いかだ":180,"なんこつ":180,"アスパラ巻":220,"じゃこ天串":160,"トマト巻":200,
-      "れんこん肉詰め":250,"和牛ホルモン":330,"ささみ":200
+      "ねぎま（しお・タレ）":160,"つくね（しお・タレ）":200,"せせり":160,"肝（ねぎごま油・タレ）":200,
+      "軍鶏むね":400,"軍鶏もも":400,"とりかわ（しお・タレ）":120,"ぼんじり":180,"チーズベーコン":350,"ウィンナー":220,
+      "えびしそ":160,"親もも":160,"ハツ":180,"砂ずり":160,"豚肩ロース":300,"しいたけ":220,"ししゃも":140,
+      "ピーマン肉詰め":180,"うずらベーコン":220,"しそ豚":220,"えのき巻":200,"ニラ巻":200,"ねぎハラミ":400,
+      "鳥賊のくちばし":220,"ハツモト":280,"軍鶏かわ":280,"いかだ（酢みそ・タレ）":180,"なんこつ":180,
+      "アスパラ巻":220,"じゃこ天串":160,"トマト巻":200,"れんこん肉詰め":250,"和牛ホルモン":330,"ささみ":200
     };
 
-    /* ==== 状態用変数 ==== */
-    let mode,total,items,used,q,ans,current='0',score,timerID,timeLeft,wrong=[];
+    /* ==== 状態変数 ==== */
+    let mode,total,items,used,q,current='0',score,timerID,timeLeft,wrong=[];
 
-    /* ==== 要素取得 ==== */
+    /* ==== 要素 ==== */
     const qs=document;
-    const progressEl=qs.getElementById('progress');
-    const questionEl=qs.getElementById('question');
-    const timerEl=qs.getElementById('timer');
-    const displayEl=qs.getElementById('display');
-    const startScreen=qs.getElementById('startScreen');
-    const quizScreen=qs.getElementById('quizScreen');
-    const endScreen=qs.getElementById('endScreen');
-    const scoreText=qs.getElementById('scoreText');
+    const prog=qs.getElementById('progress');
+    const ques=qs.getElementById('question');
+    const timr=qs.getElementById('timer');
+    const disp=qs.getElementById('display');
+    const res =qs.getElementById('result');
+    const startScr=qs.getElementById('startScreen');
+    const quizScr =qs.getElementById('quizScreen');
+    const endScr  =qs.getElementById('endScreen');
+    const scoreTxt=qs.getElementById('scoreText');
 
     /* ==== ゲーム開始 ==== */
     function startGame(m){
-      mode=m;
-      total=(m==='15')?15:Object.keys(yakitoriMenu).length;
-      items=Object.keys(yakitoriMenu);
-      used=[];score=0;wrong=[];
-      startScreen.classList.remove('active');
-      endScreen.classList.remove('active');
-      quizScreen.classList.add('active');
+      mode=m;total=(m==='15')?15:Object.keys(yakitoriMenu).length;
+      items=Object.keys(yakitoriMenu);used=[];score=0;wrong=[];
+      startScr.classList.remove('active');
+      endScr.classList.remove('active');
+      quizScr.classList.add('active');
       nextQuestion();
     }
 
     /* ==== 出題 ==== */
     function nextQuestion(){
       clearInterval(timerID);
-      if(used.length===total){return finish();}
+      if(used.length===total){finish();return;}
       do{q=items[Math.floor(Math.random()*items.length)];}while(used.includes(q));
       used.push(q);
-      questionEl.textContent=`${q} の値段は？`;
-      progressEl.textContent=`${used.length}/${total}問目`;
-      current='0';displayEl.textContent='0';
+      ques.textContent=`${q} の値段は？`;
+      prog.textContent=`${used.length}/${total}問目`;
+      current='0';disp.textContent='0';
+      res.textContent='';res.className='';
       startTimer();
     }
 
     /* ==== タイマー ==== */
     function startTimer(){
-      timeLeft=10;timerEl.textContent=timeLeft;
+      timeLeft=10;timr.textContent=timeLeft;
       timerID=setInterval(()=>{
-        timeLeft--;timerEl.textContent=timeLeft;
-        if(timeLeft===0){clearInterval(timerID);wrong.push(`${q}：タイムアウト`);setTimeout(nextQuestion,600);}
+        timeLeft--;timr.textContent=timeLeft;
+        if(timeLeft===0){clearInterval(timerID);showResult(false,true);}
       },1000);
     }
 
-    /* ==== 入力系 ==== */
+    /* ==== 入力 ==== */
     function addNumber(n){
       if(current==='0')current=''+n;
       else if(current.length<4)current+=n;
-      displayEl.textContent=current;
+      disp.textContent=current;
     }
-    function clearAnswer(){current='0';displayEl.textContent='0';}
+    function clearAnswer(){current='0';disp.textContent='0';}
 
+    /* ==== 判定 ==== */
     function checkAnswer(){
       clearInterval(timerID);
-      ans=yakitoriMenu[q];
-      if(parseInt(current)===ans)score++;
-      else wrong.push(`${q}：正解 ${ans} 円`);
-      setTimeout(nextQuestion,600);
+      const ans=yakitoriMenu[q];
+
+      // 未入力
+      if(current==='0'){
+        res.innerHTML='<span class="result-icon">✖</span>解答を入力してください';
+        res.className='result-ng';
+        return;
+      }
+
+      if(parseInt(current)===ans){
+        score++;
+        showResult(true,false,ans);
+      }else{
+        wrong.push(`${q}：正解 ${ans} 円`);
+        showResult(false,false,ans);
+      }
+    }
+
+    /* 表示まとめ */
+    function showResult(ok,timeout=false,ans=0){
+      if(timeout){
+        res.innerHTML=`<span class="result-icon">✖</span>時間切れ！ 正解は ${ans} 円です`;
+        res.className='result-ng';
+        wrong.push(`${q}：タイムアウト`);
+      }else if(ok){
+        res.innerHTML='<span class="result-icon">⭕</span>正解！';
+        res.className='result-ok';
+      }else{
+        res.innerHTML=`<span class="result-icon">✖</span>不正解！ 正解は ${ans} 円です`;
+        res.className='result-ng';
+      }
+      setTimeout(nextQuestion,800);
     }
 
     /* ==== 終了 ==== */
     function finish(){
-      const wrongText=wrong.length?'<strong>間違えた問題</strong><br>'+wrong.join('<br>'):'全問正解！';
-      scoreText.innerHTML=`${total}問中${score}問正解！<br><br>${wrongText}`;
-      quizScreen.classList.remove('active');
-      endScreen.classList.add('active');
+      const wrongStr=wrong.length?'<strong>間違えた問題</strong><br>'+wrong.join('<br>'):'全問正解！';
+      scoreTxt.innerHTML=`${total}問中${score}問正解！<br><br>${wrongStr}`;
+      quizScr.classList.remove('active');
+      endScr.classList.add('active');
     }
     function returnToStart(){
-      endScreen.classList.remove('active');
-      startScreen.classList.add('active');
+      endScr.classList.remove('active');
+      startScr.classList.add('active');
     }
   </script>
 </body>
