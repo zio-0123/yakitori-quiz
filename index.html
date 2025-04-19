@@ -2,128 +2,53 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <!-- ズーム禁止 -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>焼き鳥クイズ</title>
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      /* ダブルタップズーム／ピンチズームを抑制 */
-      touch-action: manipulation;
-      -ms-touch-action: manipulation;
-      -webkit-user-select: none;
-      user-select: none;
-    }
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background-color: #fffaf0;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .container {
-      max-width: 500px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    .screen {
-      display: none;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      position: absolute;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background-color: #fffaf0;
-      z-index: 10;
-    }
-    .screen.active {
-      display: flex;
-    }
-    #question {
-      font-size: 20px;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-    #timer {
-      font-size: 24px;
-      color: #d2691e;
-      margin-bottom: 10px;
-    }
-    #display {
-      padding: 10px 0; /* 縦幅を少し狭く */
-      font-size: 24px;
-      max-width: 300px;
-      margin: 10px auto;
-      border: 2px solid #8b4513;
-      border-radius: 10px;
-      background-color: white;
-      pointer-events: none;
-      text-align: center;
-    }
-    .control-buttons {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      max-width: 300px;
-      width: 100%;
-      margin: 10px auto;
-    }
-    .control-buttons button {
-      padding: 22px;
-      font-size: 20px;
-      border: none;
-      background-color: #d2691e;
-      color: white;
-      border-radius: 10px;
-      cursor: pointer;
-      touch-action: manipulation; /* ダブルタップ抑制 */
-    }
-    .control-buttons button:active {
-      background-color: #a0522d;
-      transform: scale(0.95);
-    }
-    .numpad {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      max-width: 300px;
-      width: 90vw;
-      margin: 10px auto;
-    }
-    .numpad button {
-      padding: 20px;
-      font-size: 20px;
-      border: none;
-      background-color: #d2691e;
-      color: white;
-      border-radius: 10px;
-      cursor: pointer;
-      aspect-ratio: 1 / 1;
-      touch-action: manipulation; /* ダブルタップ抑制 */
-    }
-    .numpad button.zero {
-      aspect-ratio: auto; /* 0だけ横長に */
-      grid-column: span 3;
-    }
-    .numpad button:active {
-      background-color: #a0522d;
-      transform: scale(0.95);
-    }
+    body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0; background-color: #fffaf0; }
+    .container { max-width: 500px; margin: 0 auto; padding: 20px; }
+    h1 { font-size: 24px; color: #8b4513; margin: 10px 0; }
+    #progress { font-size: 16px; color: #8b4513; margin: 8px 0; }
+    .start-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+    .start-buttons button { flex: 1; padding: 18px; font-size: 18px; background-color: #d2691e; color: white; border: none; border-radius: 8px; cursor: pointer; white-space: nowrap; }
+    #question { font-size: 20px; font-weight: bold; min-height: 60px; display: flex; align-items: center; justify-content: center; }
+    #timer { font-size: 24px; color: #d2691e; margin: 10px 0; font-weight: bold; }
+    #timer.warning { color: #ef4444; animation: pulse 1s infinite; }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    #result { font-size: 24px; font-weight: bold; min-height: 35px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .result-icon { font-size: 32px; animation: popIn 0.3s ease-out; }
+    @keyframes popIn { 0% { transform: scale(0); } 70% { transform: scale(1.2); } 100% { transform: scale(1); } }
+    #display { padding: 10px 20px; font-size: 26px; max-width: 90%; margin: 10px auto; border: 2px solid #8b4513; border-radius: 12px; background: white; pointer-events: none; text-align: center; }
+    .control-buttons { display: grid; gap: 12px; max-width: 300px; width: 100%; margin: 10px auto; grid-template-columns: 1fr 1fr; }
+    .numpad { display: grid; gap: 12px; max-width: 240px; width: 100%; margin: 10px auto; grid-template-columns: repeat(3, 1fr); }
+    .numpad button { aspect-ratio: 1/1; padding: 15px; font-size: 20px; }
+    .numpad button:last-child { aspect-ratio: auto; }
+    button { padding: 20px; font-size: 22px; border: none; background-color: #d2691e; color: white; border-radius: 12px; cursor: pointer; }
+    button:active { background-color: #a0522d; transform: scale(0.95); }
+    .screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #fffaf0; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10; }
+    .screen.fade { opacity: 0; transition: opacity 0.5s ease; pointer-events: none; display: flex; }
+    .screen.fade.active { opacity: 1; pointer-events: auto; }
+    .screen.active:not(.fade) { display: flex; }
   </style>
 </head>
 <body>
   <div class="container">
-    <div id="startScreen" class="screen active" onclick="startGame()">
+    <div id="startScreen" class="screen active" style="display:flex; flex-direction:column;">
       <h1>焼き鳥クイズ</h1>
-      <button onclick="startGame('all')">全問チャレンジ</button>
-      <button onclick="startGame('15')">15問チャレンジ</button>
+      <p>チャレンジモードを選んでね</p>
+      <div class="start-buttons">
+        <button onclick="startGame('all')">全問チャレンジ</button>
+        <button onclick="startGame('15')">15問チャレンジ</button>
+      </div>
     </div>
-
     <div id="quizScreen" class="screen">
-      <div id="progress">1/15問目</div>
+      <div style="position:absolute; top:10px; right:10px;">
+        <button onclick="openMenu()" style="background:none; border:none; font-size:32px; color:#8b4513;">☰</button>
+      </div>
       <div id="question"></div>
       <div id="timer">10</div>
+      <div id="progress">0/0問目</div>
+      <div id="result"></div>
       <div id="display">0</div>
       <div class="control-buttons">
         <button onclick="clearAnswer()">クリア</button>
@@ -139,117 +64,153 @@
         <button onclick="addNumber(1)">1</button>
         <button onclick="addNumber(2)">2</button>
         <button onclick="addNumber(3)">3</button>
-        <button class="zero" onclick="addNumber(0)">0</button>
+        <button onclick="addNumber(0)" style="grid-column: span 3;">0</button>
+      </div>
+      <div id="menuOverlay" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:20; justify-content:center; align-items:center;">
+        <div style="background:white; padding:20px; border-radius:12px; text-align:center;">
+          <button onclick="returnToStart()" style="margin:10px; padding:10px 20px; font-size:16px;">スタート画面に戻る</button><br>
+          <button onclick="closeMenu()" style="margin:10px; padding:10px 20px; font-size:16px;">続ける</button><br>
+          <button onclick="endGameEarly()" style="margin:10px; padding:10px 20px; font-size:16px;">終わる</button>
+        </div>
       </div>
     </div>
-
-    <div id="endScreen" class="screen">
+    <div id="endScreen" class="screen fade" style="overflow-y:auto; box-sizing:border-box; height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:40px 20px 100px;">
       <h1>クイズ終了！</h1>
-      <p id="scoreText"></p>
-      <button onclick="returnToStart()">スタート画面に戻る</button>
+      <p id="scoreText" style="margin-bottom:60px;"></p>
+      <button onclick="returnToStart()" style="margin-top:20px; padding:10px 20px; font-size:16px;">スタート画面に戻る</button>
     </div>
   </div>
-
   <script>
-    // ここからズーム抑制のためのスクリプト
-    // マルチタッチ（ピンチ）を防ぐ
-    document.documentElement.addEventListener('touchstart', function(e) {
-      if (e.touches.length > 1) e.preventDefault();
-    }, { passive: false });
-    // ダブルタップによるズームを防ぐ
-    let lastTouchEnd = 0;
-    document.documentElement.addEventListener('touchend', function(e) {
-      const now = Date.now();
-      if (now - lastTouchEnd <= 300) e.preventDefault();
-      lastTouchEnd = now;
-    }, false);
-    // ここまで
+    const MAX_QUESTIONS = 15;
+    const yakitoriMenu = {
+      "ねぎま（しお・タレ）":160, "つくね（しお・タレ）":200, "せせり":160, "肝（ねぎごま油・タレ）":200,
+      "軍鶏むね":400, "軍鶏もも":400, "とりかわ（しお・タレ）":120, "ぼんじり":180,
+      "チーズベーコン":350, "ウィンナー":220, "えびしそ":160, "親もも":160,
+      "ハツ":180, "砂ずり":160, "豚肩ロース":300, "しいたけ":220,
+      "ししゃも":140, "ピーマン肉詰め":180, "うずらベーコン":220, "しそ豚":220,
+      "えのき巻":200, "ニラ巻":200, "ねぎハラミ":400, "鳥賊のくちばし":220,
+      "ハツモト":280, "軍鶏かわ":280, "いかだ（酢みそ・タレ）":180, "なんこつ":180,
+      "アスパラ巻":220, "じゃこ天串":160, "トマト巻":200, "れんこん肉詰め":250,
+      "和牛ホルモン":330, "ささみ":200
+    };
+    let menuItems = Object.keys(yakitoriMenu);
+    let usedItems = [], currentQuestion = null, currentAnswer = "0", correctCount = 0, timerInterval = null, timeLeft = 10, timeScores = [], incorrectAnswers = [];
+    let selectedMode = null;
 
-    // 以下、既存のゲームロジックを全部入れる
-    const yakitoriMenu = { /* 略 */ };
-    let mode, menuItems, usedItems, currentQuestion, currentAnswer, correctCount, timerInterval, timeLeft, timeScores, incorrectAnswers;
-    function startGame(selectedMode) {
-      mode = selectedMode;
-      menuItems = Object.keys(yakitoriMenu);
+    function switchScreen(to) {
+      document.querySelectorAll('.screen').forEach(s => { if (s.classList.contains('fade')) s.classList.remove('active'); else s.style.display = 'none'; });
+      const tgt = document.getElementById(to);
+      if (!tgt) return;
+      if (tgt.classList.contains('fade')) tgt.classList.add('active'); else tgt.style.display = 'flex';
+    }
+
+    function startGame(mode) {
+      selectedMode = mode;
       usedItems = [];
-      currentAnswer = "0";
       correctCount = 0;
       timeScores = [];
       incorrectAnswers = [];
-      document.getElementById('startScreen').classList.remove('active');
-      document.getElementById('quizScreen').classList.add('active');
+      switchScreen('quizScreen');
       nextQuestion();
     }
+
     function nextQuestion() {
       clearInterval(timerInterval);
-      const total = mode === 'all' ? menuItems.length : 15;
-      if (usedItems.length === total) {
-        endGame();
-        return;
-      }
+      const total = selectedMode === 'all' ? menuItems.length : MAX_QUESTIONS;
+      if (usedItems.length === total) { endGameEarly(); return; }
       let q;
-      do {
-        q = menuItems[Math.floor(Math.random() * menuItems.length)];
-      } while (usedItems.includes(q));
+      do { q = menuItems[Math.floor(Math.random() * menuItems.length)]; } while (usedItems.includes(q));
+      currentQuestion = q;
       usedItems.push(q);
-      document.getElementById('question').textContent = `${q} の値段は？`;
-      document.getElementById('progress').textContent = `${usedItems.length}/${total}問目`;
-      document.getElementById('display').textContent = '0';
+      const progressEl = document.getElementById('progress');
+      if (progressEl) progressEl.textContent = `${usedItems.length}/${total}問目`;
+      const questionEl = document.getElementById('question');
+      if (questionEl) questionEl.textContent = `${q} の値段は？`;
+      const resultEl = document.getElementById('result');
+      if (resultEl) resultEl.textContent = '';
+      clearAnswer();
       startTimer();
     }
+
     function startTimer() {
+      clearInterval(timerInterval);
       timeLeft = 10;
       const el = document.getElementById('timer');
+      if (!el) return;
       el.textContent = timeLeft;
       el.classList.remove('warning');
       timerInterval = setInterval(() => {
         timeLeft--;
         el.textContent = timeLeft;
         if (timeLeft <= 3) el.classList.add('warning');
-        if (timeLeft <= 0) {
-          clearInterval(timerInterval);
-          handleTimeout();
-        }
+        if (timeLeft <= 0) { clearInterval(timerInterval); handleTimeout(); }
       }, 1000);
     }
-    function addNumber(n) {
-      if (currentAnswer === '0') currentAnswer = '' + n;
-      else if (currentAnswer.length < 4) currentAnswer += n;
-      document.getElementById('display').textContent = currentAnswer;
+
+    function handleTimeout() {
+      timeScores.push(0);
+      const res = document.getElementById('result');
+      if (res) {
+        res.innerHTML = `<span class="result-icon">✖</span><span>時間切れ！正解は ${yakitoriMenu[currentQuestion]} 円です。</span>`;
+        res.style.color = '#ef4444';
+      }
+      setTimeout(nextQuestion, 1000);
     }
+
+    function addNumber(num) {
+      if (currentAnswer === '0') currentAnswer = num.toString();
+      else if (currentAnswer.length < 4) currentAnswer += num;
+      updateDisplay();
+    }
+
     function clearAnswer() {
       currentAnswer = '0';
-      document.getElementById('display').textContent = currentAnswer;
+      updateDisplay();
     }
+
+    function updateDisplay() {
+      const disp = document.getElementById('display');
+      if (disp) disp.textContent = currentAnswer;
+    }
+
     function checkAnswer() {
-      clearInterval(timerInterval);
+      const res = document.getElementById('result');
+      if (currentAnswer === '0') { if(res) res.innerHTML = '<span style="color:#ef4444;">解答を入力してください</span>'; return; }
       const correct = yakitoriMenu[currentQuestion];
       if (parseInt(currentAnswer) === correct) {
         timeScores.push(timeLeft);
+        if(res) { res.innerHTML = '<span class="result-icon">⭕</span><span>正解！</span>'; res.style.color = '#22c55e'; }
         correctCount++;
       } else {
         timeScores.push(0);
         incorrectAnswers.push(`${currentQuestion}：正解 ${correct} 円`);
+        if(res) { res.innerHTML = `<span class="result-icon">✖</span><span>不正解！正解は ${correct} 円です。</span>`; res.style.color = '#ef4444'; }
       }
       setTimeout(nextQuestion, 1000);
     }
-    function handleTimeout() {
-      timeScores.push(0);
-      setTimeout(nextQuestion, 1000);
-    }
-    function endGame() {
+
+    function openMenu() { const mo = document.getElementById('menuOverlay'); if(mo) mo.style.display = 'flex'; }
+    function closeMenu() { const mo = document.getElementById('menuOverlay'); if(mo) mo.style.display = 'none'; }
+
+    function endGameEarly() {
       clearInterval(timerInterval);
-      const total = mode === 'all' ? menuItems.length : 15;
-      const timeSum = timeScores.reduce((a,b)=>a+b,0);
-      document.getElementById('scoreText').innerHTML =
-        `${total}問中${correctCount}問正解！<br>タイムスコア: ${timeSum}<br><strong>合計スコア: ${correctCount + timeSum}</strong>`;
-      document.getElementById('quizScreen').classList.remove('active');
-      document.getElementById('endScreen').classList.add('active');
+      const total = selectedMode === 'all' ? menuItems.length : MAX_QUESTIONS;
+      const sum = timeScores.reduce((a,b)=>a+b,0);
+      const scoreText = document.getElementById('scoreText');
+      if(scoreText) scoreText.innerHTML =
+        `${usedItems.length}問中${correctCount}問正解！<br>` +
+        `タイムスコア: ${sum}<br>` +
+        `<strong>合計スコア: ${correctCount} + ${sum} = ${correctCount+sum}</strong>` +
+        (incorrectAnswers.length ? `<br><br><strong>間違えた問題:</strong><br>` + incorrectAnswers.join('<br>') : '');
+      switchScreen('endScreen');
     }
+
     function returnToStart() {
       clearInterval(timerInterval);
-      document.getElementById('endScreen').classList.remove('active');
-      document.getElementById('startScreen').classList.add('active');
+      usedItems = []; correctCount = 0; timeScores=[]; incorrectAnswers=[];
+      const mo = document.getElementById('menuOverlay'); if(mo) mo.style.display='none';
+      document.querySelectorAll('.screen').forEach(s=>{ if(s.classList.contains('fade')) s.classList.remove('active'); else s.style.display='none'; });
+      const ss = document.getElementById('startScreen'); if(ss) ss.style.display='flex';
     }
   </script>
 </body>
