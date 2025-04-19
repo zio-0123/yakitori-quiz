@@ -196,10 +196,10 @@
 
   // 正答率に応じたコメント  (★ 0–29% だけ <br> を入れる)
   let comment;
-  if      (rate === 100) comment = '焼き鳥奉行！パーフェクト！';
-  else if (rate >= 90)   comment = 'ベテラン焼き師！あと一歩！';
-  else if (rate >= 70)   comment = '串打ち職人見習い！いい線いってる！';
-  else if (rate >= 50)   comment = '焼き鳥好きレベルアップ中！';
+  if      (rate === 100) comment = '焼き鳥奉行！<br>パーフェクト！';
+  else if (rate >= 90)   comment = 'ベテラン焼き師！<br>あと一歩！';
+  else if (rate >= 70)   comment = '串打ち職人見習い！<br>いい線いってる！';
+  else if (rate >= 50)   comment = '焼き鳥好き<br>レベルアップ中！';
   else if (rate >= 30)   comment = 'これからが修行の本番！';
   else                   comment = '修行あるのみ！<br>まずはメニューを覚えよう';  // ←★
 
