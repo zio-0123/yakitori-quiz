@@ -215,7 +215,31 @@
   quizScr.classList.remove('active');
   endScr.classList.add('active');
 }
-    function returnToStart(){menuOvl.style.display='none';endScr.classList.remove('active');startScr.classList.add('active');}
+    /* ===== スタート画面に戻る ===== */
+function returnToStart(){
+  /* ① タイマー停止（万一動いていたら） */
+  clearInterval(timerID);
+
+  /* ② オーバーレイを必ず閉じる */
+  menuOvl.style.display = 'none';
+
+  /* ③ すべてのスクリーンを非表示にしてから */
+  startScr.classList.remove('active');
+  quizScr .classList.remove('active');
+  endScr  .classList.remove('active');
+
+  /* ④ スタート画面だけを表示 */
+  startScr.classList.add('active');
+
+  /* ⑤ 変数と表示を初期化して次回に備える（任意） */
+  current = '0';
+  dis.textContent = '0';
+  res.textContent = '';
+  res.className   = '';
+  used   = [];
+  score  = 0;
+  wrong  = [];
+}
   </script>
 </body>
 </html>
