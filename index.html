@@ -5,7 +5,6 @@
   <meta name="viewport"
         content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
   <title>お値段クイズ</title>
-  <!-- Google Fonts: 筆フォント -->
   <link href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@700&family=Yuji+Boku&display=swap" rel="stylesheet">
   <style>
     html,body{
@@ -36,6 +35,15 @@
       cursor:pointer;transition:.1s;
     }
     .mode-btn:active{background:#a0522d;}
+    /* === 戻るボタン === */
+    .back-btn{
+      position:absolute;left:18px;bottom:20px;z-index:20;
+      background:#fff;border:3px solid #d2691e;border-radius:16px;
+      color:#8b4513;font-family:'Yuji Boku','Kiwi Maru',serif;
+      font-size:20px;padding:10px 22px;cursor:pointer;box-shadow:0 1px 6px #0001;
+      transition:.1s;
+    }
+    .back-btn:active{background:#ffe4c4;}
     #thirtySecScreen h2{
       font-size:28px;
       margin-bottom:28px;
@@ -167,6 +175,7 @@
     <div style="height:20px"></div>
     <button class="mode-btn" onclick="chooseMode('all')">全問チャレンジ</button>
     <button class="mode-btn" onclick="chooseMode('15')">15問チャレンジ</button>
+    <button class="back-btn" onclick="returnToStart()">戻る</button>
   </div>
   <!-- 30秒チャレンジ用ジャンル選択画面 -->
   <div id="thirtySecScreen" class="screen">
@@ -176,6 +185,7 @@
       <button class="menu-btn" onclick="startThirtySec('otsumami')">おつまみ</button>
       <button class="menu-btn" onclick="startThirtySec('drink')">ドリンク</button>
     </div>
+    <button class="back-btn" onclick="returnToStart()">戻る</button>
   </div>
   <!-- 鳥ジャンプアニメ画面 -->
   <div id="jumpScreen" class="screen">
@@ -326,24 +336,28 @@
       clearInterval(timerID);
       answerLocked = false;
       let menu = quizType==='yakitori'?yakitoriMenu:quizType==='otsumami'?otsumamiMenu:drinkMenu;
-      if(isThirtySec){
-        pro.textContent = `正解数：${score}`;
-        if(thirtySecTimeLeft<=0){return;}
-      }else{
-        if(used.length===total){
-          screenJump(quizScr,jumpScr,()=>{setTimeout(()=>{jumpScr.classList.remove('active');finish();},1100)});
-          return;
-        }
-        pro.textContent=`${used.length+1}/${total}問目`;
+      if(!isThirtySec && used.length===total){
+        screenJump(quizScr,jumpScr,()=>{setTimeout(()=>{jumpScr.classList.remove('active');finish();},1100)});
+        return;
       }
       do{q=items[Math.floor(Math.random()*items.length)];}while(used.includes(q)&&used.length<items.length);
       used.push(q);
       que.textContent=`${q} の値段は？`;
+      if(!isThirtySec){
+        pro.textContent=`${used.length}/${total}問目`;
+      }else{
+        pro.textContent=`正解数：${score}`;
+      }
       current='0';dis.textContent='0';res.textContent='';res.className='';
       if(isThirtySec){
         timeLeft = 10;
-        tim.textContent = thirtySecTimeLeft;
-        timerID=setInterval(()=>{timeLeft--;if(timeLeft<=0){clearInterval(timerID);showResult(false,true);}},1000);
+        timerID=setInterval(()=>{
+          timeLeft--;
+          if(timeLeft<=0){
+            clearInterval(timerID);
+            showResult(false,true);
+          }
+        },1000);
       }else{
         startTimer();
       }
@@ -439,7 +453,6 @@
       else                  comment = '修行あるのみ！\nまずはメニューを覚えよう';
       endHeading.innerHTML = comment.replace(/\n/g,'<br>');
 
-      // 追加: 間違いリスト
       if(wrong.length){
         let html = `<strong>間違えた問題</strong><br>`;
         html += wrong.map(w => `${w[0]}：正解 ${w[1]} 円`).join('<br>');
