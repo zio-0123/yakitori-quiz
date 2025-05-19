@@ -5,6 +5,7 @@
   <meta name="viewport"
         content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
   <title>お値段クイズ</title>
+  <!-- Google Fonts: 筆フォント -->
   <link href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@700&family=Yuji+Boku&display=swap" rel="stylesheet">
   <style>
     html,body{
@@ -18,6 +19,7 @@
     }
     .screen{position:fixed;inset:0;display:none;flex-direction:column;justify-content:center;align-items:center;}
     .screen.active{display:flex;}
+    /* ==== スタート/モード選択 ==== */
     #startScreen h1{font-size:34px;margin:32px 0 38px;color:#111;letter-spacing:2px;}
     #menuSel{display:flex;flex-direction:column;gap:20px;}
     .menu-btn{
@@ -27,7 +29,7 @@
       cursor:pointer;transition:.1s;box-shadow:0 2px 8px #0001;
     }
     .menu-btn:active{background:#ffe4c4;}
-    #modeScreen{gap:20px;}
+    #modeScreen, #thirtySecSel{gap:20px;}
     .mode-btn{
       font-size:22px;padding:18px 0;width:180px;margin:0 auto;
       background:#d2691e;color:#fff;border:none;border-radius:16px;
@@ -35,22 +37,7 @@
       cursor:pointer;transition:.1s;
     }
     .mode-btn:active{background:#a0522d;}
-    /* === 戻るボタン === */
-    .back-btn{
-      position:absolute;left:18px;bottom:20px;z-index:20;
-      background:#fff;border:3px solid #d2691e;border-radius:16px;
-      color:#8b4513;font-family:'Yuji Boku','Kiwi Maru',serif;
-      font-size:20px;padding:10px 22px;cursor:pointer;box-shadow:0 1px 6px #0001;
-      transition:.1s;
-    }
-    .back-btn:active{background:#ffe4c4;}
-    #thirtySecScreen h2{
-      font-size:28px;
-      margin-bottom:28px;
-      color:#8b4513;
-      font-family:'Yuji Boku','Kiwi Maru',serif;
-    }
-    #thirtySecMenuSel{display:flex;flex-direction:column;gap:20px;}
+    /* ==== 鳥ジャンプ ==== */
     #jumpScreen img{
       width:130px;height:auto;
       user-drag:none;-webkit-user-drag:none;
@@ -66,6 +53,7 @@
       82%  {transform:translateY(-45px);}
       100% {transform:translateY(0);}
     }
+    /* ==== クイズ画面 ==== */
     #progress{
       font-size:18px;color:#8b4513;margin-bottom:4px;letter-spacing:2px;
       font-family:'Yuji Boku','Kiwi Maru',serif;
@@ -109,6 +97,7 @@
     }
     .numpad button{aspect-ratio:1/1;}
     .numpad button.zero{grid-column:span 3;aspect-ratio:auto;}
+    /* ==== メニューオーバーレイ ==== */
     #menuOverlay{
       position:absolute;inset:0;background:rgba(0,0,0,.5);
       display:none;justify-content:center;align-items:center;z-index:10;
@@ -123,6 +112,7 @@
       font-family:'Yuji Boku','Kiwi Maru',serif;
     }
     #menuOverlay button:active{background:#a0522d;}
+    /* ==== 終了画面 ==== */
     #endHeading{
       font-size:2.2rem;
       font-family:'Yuji Boku','Kiwi Maru',serif;
@@ -151,12 +141,21 @@
       font-family:'Yuji Boku','Kiwi Maru',serif;
     }
     #endScreen button:active{background:#a0522d;transform:scale(.96);}
+    /* ==== 上部メニューボタン ==== */
     .menubtn{
       position:absolute;top:10px;right:10px;
       background:none;border:none;font-size:32px;color:#8b4513;
       font-family:'Yuji Boku','Kiwi Maru',serif;cursor:pointer;
       z-index:5;
     }
+    /* ==== 戻るボタン ==== */
+    .back-btn{
+      position:absolute;left:12px;bottom:12px;
+      font-size:20px;padding:12px 22px;background:#fff;border:2px solid #d2691e;
+      color:#8b4513;border-radius:14px;font-family:'Yuji Boku','Kiwi Maru',serif;
+      cursor:pointer;
+    }
+    .back-btn:active{background:#ffe4c4;}
   </style>
 </head>
 <body>
@@ -172,20 +171,18 @@
   </div>
   <!-- モード選択画面 -->
   <div id="modeScreen" class="screen">
+    <button class="back-btn" onclick="returnToStart()">戻る</button>
     <div style="height:20px"></div>
     <button class="mode-btn" onclick="chooseMode('all')">全問チャレンジ</button>
     <button class="mode-btn" onclick="chooseMode('15')">15問チャレンジ</button>
-    <button class="back-btn" onclick="returnToStart()">戻る</button>
   </div>
-  <!-- 30秒チャレンジ用ジャンル選択画面 -->
-  <div id="thirtySecScreen" class="screen">
-    <h2>ジャンルを選択してください</h2>
-    <div id="thirtySecMenuSel">
-      <button class="menu-btn" onclick="startThirtySec('yakitori')">焼鳥</button>
-      <button class="menu-btn" onclick="startThirtySec('otsumami')">おつまみ</button>
-      <button class="menu-btn" onclick="startThirtySec('drink')">ドリンク</button>
-    </div>
+  <!-- 30秒チャレンジ ジャンル選択画面 -->
+  <div id="thirtySecSel" class="screen">
     <button class="back-btn" onclick="returnToStart()">戻る</button>
+    <div style="height:20px"></div>
+    <button class="mode-btn" onclick="startThirtySec('yakitori')">焼鳥</button>
+    <button class="mode-btn" onclick="startThirtySec('otsumami')">おつまみ</button>
+    <button class="mode-btn" onclick="startThirtySec('drink')">ドリンク</button>
   </div>
   <!-- 鳥ジャンプアニメ画面 -->
   <div id="jumpScreen" class="screen">
@@ -251,8 +248,7 @@
     let mode, total, items, used, q, current='0', score, timerID, timeLeft, wrong=[];
     let answerLocked = false;
     let isThirtySec = false;
-    let thirtySecTimerID = null;
-    let thirtySecTimeLeft = 30;
+    let thirtySecTimeLeft = 0, thirtySecTimerID = null;
 
     // --- 要素 ---
     const qs = document;
@@ -262,20 +258,22 @@
       endScr=qs.getElementById('endScreen'),scoreTxt=qs.getElementById('scoreText'),
       menuOvl=qs.getElementById('menuOverlay'),wrongBox=qs.getElementById('wrongBox'),
       modeScr=qs.getElementById('modeScreen'),jumpScr=qs.getElementById('jumpScreen'),
-      endHeading=qs.getElementById('endHeading'),thirtySecScr=qs.getElementById('thirtySecScreen');
+      endHeading=qs.getElementById('endHeading'),thirtySecScr=qs.getElementById('thirtySecSel');
 
+    // --- スタート画面→モード選択 ---
     function chooseMenu(type){
       quizType = type;
       isThirtySec = false;
       screenJump(startScr,modeScr);
     }
+    // 30秒チャレンジボタン
     function choose30Sec(){
-      isThirtySec = true;
       screenJump(startScr,thirtySecScr);
     }
+    // 30秒チャレンジ：ジャンル選択
     function startThirtySec(type){
       quizType = type;
-      mode = 'thirtysec';
+      isThirtySec = true;
       screenJump(thirtySecScr,jumpScr,() => {
         setTimeout(()=>{
           jumpScr.classList.remove('active');
@@ -283,8 +281,10 @@
         },1100);
       });
     }
+    // --- モード選択→鳥ジャンプ→クイズ ---
     function chooseMode(m){
       mode = m;
+      isThirtySec = false;
       screenJump(modeScr,jumpScr,() => {
         setTimeout(()=>{
           jumpScr.classList.remove('active');
@@ -292,9 +292,11 @@
         },1100);
       });
     }
+    // --- 汎用:画面遷移+鳥アニメ ---
     function screenJump(from,to,cb){
       from.classList.remove('active');
       jumpScr.classList.add('active');
+      // アニメーション画像再生強制
       const img = document.getElementById('niwatoriImg');
       img.style.animation='none';
       void img.offsetWidth;
@@ -305,13 +307,11 @@
         if(cb) cb();
       },1100);
     }
+
+    // --- ゲーム開始 ---
     function startGame(){
       let menu = quizType==='yakitori'?yakitoriMenu:quizType==='otsumami'?otsumamiMenu:drinkMenu;
-      if(isThirtySec){
-        total = 9999;
-      }else{
-        total=(mode==='15')?Math.min(15,Object.keys(menu).length):Object.keys(menu).length;
-      }
+      total=(mode==='15')?Math.min(15,Object.keys(menu).length):Object.keys(menu).length;
       items=Object.keys(menu);
       used=[];score=0;wrong=[];
       answerLocked = false;
@@ -320,6 +320,7 @@
       if(isThirtySec){
         thirtySecTimeLeft = 30;
         tim.textContent = thirtySecTimeLeft;
+        // 30秒のタイマー
         thirtySecTimerID = setInterval(()=>{
           thirtySecTimeLeft--;
           tim.textContent = thirtySecTimeLeft;
@@ -329,55 +330,60 @@
             showThirtySecEnd();
           }
         },1000);
+        nextThirtySec();
+      }else{
+        nextQuestion();
       }
-      nextQuestion();
     }
+
+    // --- 通常モード出題 ---
     function nextQuestion(){
       clearInterval(timerID);
       answerLocked = false;
       let menu = quizType==='yakitori'?yakitoriMenu:quizType==='otsumami'?otsumamiMenu:drinkMenu;
-      if(!isThirtySec && used.length===total){
-        screenJump(quizScr,jumpScr,()=>{setTimeout(()=>{jumpScr.classList.remove('active');finish();},1100)});
-        return;
-      }
-      do{q=items[Math.floor(Math.random()*items.length)];}while(used.includes(q)&&used.length<items.length);
-      used.push(q);
-      que.textContent=`${q} の値段は？`;
-      if(!isThirtySec){
-        pro.textContent=`${used.length}/${total}問目`;
-      }else{
-        pro.textContent=`正解数：${score}`;
-      }
+      if(used.length===total){screenJump(quizScr,jumpScr,()=>{setTimeout(()=>{jumpScr.classList.remove('active');finish();},1100)});return;}
+      do{q=items[Math.floor(Math.random()*items.length)];}while(used.includes(q));
       current='0';dis.textContent='0';res.textContent='';res.className='';
-      if(isThirtySec){
-        timeLeft = 10;
-        timerID=setInterval(()=>{
-          timeLeft--;
-          if(timeLeft<=0){
-            clearInterval(timerID);
-            showResult(false,true);
-          }
-        },1000);
-      }else{
-        startTimer();
-      }
+      que.textContent=`${q} の値段は？`;
+      pro.textContent=`${used.length+1}/${total}問目`;
+      startTimer();
     }
+
+    // --- 30秒チャレンジ用出題 ---
+    function nextThirtySec(){
+      clearInterval(timerID);
+      answerLocked = false;
+      let menu = quizType==='yakitori'?yakitoriMenu:quizType==='otsumami'?otsumamiMenu:drinkMenu;
+      // usedはshowResultでしか増やさない
+      do{q=items[Math.floor(Math.random()*items.length)];}while(used.includes(q));
+      current='0';dis.textContent='0';res.textContent='';res.className='';
+      que.textContent=`${q} の値段は？`;
+      pro.textContent=`正解数：${score}`;
+      // 各問題のタイマーは無効、30秒だけ管理
+    }
+
+    // --- タイマー ---
     function startTimer(){
       timeLeft=10;tim.textContent=timeLeft;
       timerID=setInterval(()=>{timeLeft--;tim.textContent=timeLeft;
         if(timeLeft===0){clearInterval(timerID);showResult(false,true);}},1000);
     }
+
+    // --- 入力 ---
     function addNumber(n){
       if(answerLocked) return;
       current=(current==='0')?''+n:(current.length<4?current+n:current);
       dis.textContent=current;
     }
     function clearAnswer(){if(answerLocked) return;current='0';dis.textContent='0';}
+
+    // --- 判定 ---
     function checkAnswer(){
       if(answerLocked) return;
       if(current==='0'){
         res.innerHTML='<span class="result-icon">✖</span>解答を入力してください';
         res.className='result-ng';
+        // ロックしない
         return;
       }
       answerLocked = true;
@@ -387,8 +393,11 @@
       if(parseInt(current)===ans){score++;showResult(true,false,ans);}
       else{wrong.push([q,ans]);showResult(false,false,ans);}
     }
+
+    // --- 結果表示 ---
     function showResult(ok,timeout=false,ans=0){
       let menu = quizType==='yakitori'?yakitoriMenu:quizType==='otsumami'?otsumamiMenu:drinkMenu;
+      used.push(q); // 実際に解答したもののみカウント
       if(timeout){
         const correct = menu[q];
         res.innerHTML=`<span class="result-icon">✖</span>時間切れ！ 正解は ${correct} 円です`;
@@ -407,18 +416,26 @@
         if(isThirtySec && thirtySecTimeLeft<=0){
           showThirtySecEnd();
         }else{
-          nextQuestion();
+          isThirtySec ? nextThirtySec() : nextQuestion();
         }
       },800);
     }
+
+    // --- 30秒終了時のエンド画面表示 ---
+    function showThirtySecEnd(){
+      quizScr.classList.remove('active');
+      finish();
+    }
+
+    // --- メニューオーバーレイ ---
     function openMenu(){menuOvl.style.display='flex';}
     function closeMenu(){menuOvl.style.display='none';}
+
+    // --- 終了処理 ---
     function finish(){
       clearInterval(timerID);
-      if(isThirtySec){
-        showThirtySecEnd();
-        return;
-      }
+      clearInterval(thirtySecTimerID);
+      // 正答率によるコメント
       const answered = used.length;
       const rate     = answered ? (score / answered) * 100 : 0;
       let comment;
@@ -430,6 +447,7 @@
       else                   comment = '修行あるのみ！\nまずはメニューを覚えよう';
       endHeading.innerHTML = comment.replace(/\n/g,'<br>');
 
+      // 間違いリスト
       if(wrong.length){
         let html = `<strong>間違えた問題</strong><br>`;
         html += wrong.map(w => `${w[0]}：正解 ${w[1]} 円`).join('<br>');
@@ -437,53 +455,28 @@
       }else{
         wrongBox.innerHTML = "";
       }
-      scoreTxt.innerHTML = `${total}問中${score}問正解！`;
-      menuOvl.style.display = 'none';
-      endScr.classList.add('active');
-      quizScr.classList.remove('active');
-    }
-    function showThirtySecEnd(){
-      clearInterval(timerID);
-      clearInterval(thirtySecTimerID);
-      let comment;
-      if      (score >= 20) comment = '焼き鳥神！\n神業的な速さ！';
-      else if (score >= 15) comment = '超絶スピード焼き師！\nお見事！';
-      else if (score >= 10) comment = '串打ちスピードスター！\nなかなかの腕前！';
-      else if (score >= 7)  comment = 'まずまず！\nまだまだ伸びしろアリ！';
-      else                  comment = '修行あるのみ！\nまずはメニューを覚えよう';
-      endHeading.innerHTML = comment.replace(/\n/g,'<br>');
-
-      if(wrong.length){
-        let html = `<strong>間違えた問題</strong><br>`;
-        html += wrong.map(w => `${w[0]}：正解 ${w[1]} 円`).join('<br>');
-        wrongBox.innerHTML = html;
+      if(isThirtySec){
+        scoreTxt.innerHTML = `30秒で${score}問正解！`;
       }else{
-        wrongBox.innerHTML = "";
+        scoreTxt.innerHTML = `${total}問中${score}問正解！`;
       }
-      scoreTxt.innerHTML = `30秒チャレンジ<br>正解数：${score}問！`;
       menuOvl.style.display = 'none';
       endScr.classList.add('active');
       quizScr.classList.remove('active');
-      isThirtySec = false;
     }
     function endGameEarly(){
       clearInterval(timerID);
       clearInterval(thirtySecTimerID);
-      if(isThirtySec){
-        showThirtySecEnd();
-      }else{
-        screenJump(quizScr,jumpScr,()=>{setTimeout(()=>{jumpScr.classList.remove('active');finish();},1100)});
-      }
+      screenJump(quizScr,jumpScr,()=>{setTimeout(()=>{jumpScr.classList.remove('active');finish();},1100)});
     }
     function returnToStart(){
       menuOvl.style.display='none';
       endScr.classList.remove('active');
       modeScr.classList.remove('active');
+      thirtySecScr.classList.remove('active');
       quizScr.classList.remove('active');
       jumpScr.classList.remove('active');
-      thirtySecScr.classList.remove('active');
       startScr.classList.add('active');
-      isThirtySec = false;
     }
   </script>
 </body>
