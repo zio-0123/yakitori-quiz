@@ -6,6 +6,7 @@
         content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
   <title>お値段クイズ</title>
   <link href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@700&family=Yuji+Boku&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
   <style>
     html,body{
       margin:0;padding:0;
@@ -197,51 +198,54 @@
   </style>
 </head>
 <body>
-  <div id="startScreen" class="screen"> <h1>お値段クイズ</h1>
+  <div id="startScreen" class="screen">
+    <h1>お値段クイズ</h1>
     <div id="menuSel">
-      <button class="menu-btn" onclick="chooseMenu('yakitori', event)">焼鳥</button>
-      <button class="menu-btn" onclick="chooseMenu('otsumami', event)">おつまみ</button>
-      <button class="menu-btn" onclick="chooseMenu('drink', event)">ドリンク</button>
-      <button class="menu-btn" onclick="choose30Sec(event)">30秒チャレンジ</button>
+      <button class="menu-btn" onclick="playButtonClickSound(); chooseMenu('yakitori', event)">焼鳥</button>
+      <button class="menu-btn" onclick="playButtonClickSound(); chooseMenu('otsumami', event)">おつまみ</button>
+      <button class="menu-btn" onclick="playButtonClickSound(); chooseMenu('drink', event)">ドリンク</button>
+      <button class="menu-btn" onclick="playButtonClickSound(); choose30Sec(event)">30秒チャレンジ</button>
     </div>
   </div>
   <div id="modeScreen" class="screen">
-    <button class="back-btn" onclick="returnToStart()">戻る</button>
+    <button class="back-btn" onclick="playButtonClickSound(); returnToStart()">戻る</button>
     <div style="height:20px"></div>
-    <button class="mode-btn" onclick="chooseMode('all')">全問チャレンジ</button>
-    <button class="mode-btn" onclick="chooseMode('15')">15問チャレンジ</button>
+    <button class="mode-btn" onclick="playButtonClickSound(); chooseMode('all')">全問チャレンジ</button>
+    <button class="mode-btn" onclick="playButtonClickSound(); chooseMode('15')">15問チャレンジ</button>
   </div>
   <div id="thirtySecSel" class="screen">
-    <button class="back-btn" onclick="returnToStart()">戻る</button>
+    <button class="back-btn" onclick="playButtonClickSound(); returnToStart()">戻る</button>
     <div style="height:20px"></div>
-    <button class="mode-btn" onclick="startThirtySec('yakitori')">焼鳥</button>
-    <button class="mode-btn" onclick="startThirtySec('otsumami')">おつまみ</button>
-    <button class="mode-btn" onclick="startThirtySec('drink')">ドリンク</button>
+    <button class="mode-btn" onclick="playButtonClickSound(); startThirtySec('yakitori')">焼鳥</button>
+    <button class="mode-btn" onclick="playButtonClickSound(); startThirtySec('otsumami')">おつまみ</button>
+    <button class="mode-btn" onclick="playButtonClickSound(); startThirtySec('drink')">ドリンク</button>
   </div>
   <div id="jumpScreen" class="screen">
-    <img id="niwatoriImg" src="https://placehold.co/130x130/FFF0E0/D2691E?text=🐔&font=noto-sans-jp" alt="鳥" draggable="false" onerror="this.src='https://placehold.co/130x130/EEEEEE/AAAAAA?text=画像読込エラー&font=noto-sans-jp'; this.alt='画像読み込みエラー';">
-  </div>
+  <img id="niwatoriImg" src="niwatori.jpg" alt="鳥" draggable="false" style="width:130px;height:130px;border-radius:8px;">
+</div>
+
   <div id="quizScreen" class="screen">
-    <button class="menubtn" onclick="openMenu()">☰</button>
+    <button class="menubtn" onclick="playButtonClickSound(); openMenu()">☰</button>
     <div id="progress"></div>
     <div id="question"></div>
     <div id="timer">10</div>
     <div id="result"></div>
     <div id="display">0</div>
     <div class="control-buttons">
-      <button onclick="clearAnswer()">クリア</button>
-      <button onclick="checkAnswer()">解答</button>
+      <button onclick="playButtonClickSound(); clearAnswer()">クリア</button>
+      <button onclick="playButtonClickSound(); checkAnswer()">解答</button>
     </div>
     <div class="numpad">
-      <button onclick="addNumber(7)">7</button><button onclick="addNumber(8)">8</button><button onclick="addNumber(9)">9</button>
-      <button onclick="addNumber(4)">4</button><button onclick="addNumber(5)">5</button><button onclick="addNumber(6)">6</button>
-      <button onclick="addNumber(1)">1</button><button onclick="addNumber(2)">2</button><button onclick="addNumber(3)">3</button>
-      <button class="zero" onclick="addNumber(0)">0</button>
+      <button onclick="playButtonClickSound(); addNumber(7)">7</button><button onclick="playButtonClickSound(); addNumber(8)">8</button><button onclick="playButtonClickSound(); addNumber(9)">9</button>
+      <button onclick="playButtonClickSound(); addNumber(4)">4</button><button onclick="playButtonClickSound(); addNumber(5)">5</button><button onclick="playButtonClickSound(); addNumber(6)">6</button>
+      <button onclick="playButtonClickSound(); addNumber(1)">1</button><button onclick="playButtonClickSound(); addNumber(2)">2</button><button onclick="playButtonClickSound(); addNumber(3)">3</button>
+      <button class="zero" onclick="playButtonClickSound(); addNumber(0)">0</button>
     </div>
-    <div id="menuOverlay"> <div>
-        <button onclick="returnToStart()">スタート画面に戻る</button><br>
-        <button onclick="closeMenu()">続ける</button><br>
-        <button onclick="endGameEarly()">終わる</button>
+    <div id="menuOverlay">
+      <div>
+        <button onclick="playButtonClickSound(); returnToStart()">スタート画面に戻る</button><br>
+        <button onclick="playButtonClickSound(); closeMenu()">続ける</button><br>
+        <button onclick="playButtonClickSound(); endGameEarly()">終わる</button>
       </div>
     </div>
   </div>
@@ -249,9 +253,57 @@
     <div id="endHeading"></div>
     <div id="wrongBox"></div>
     <div id="scoreText"></div>
-    <button onclick="returnToStart()">スタート画面に戻る</button>
+    <button onclick="playButtonClickSound(); returnToStart()">スタート画面に戻る</button>
   </div>
   <script>
+    // --- 効果音の準備 ---
+    let clickSound;
+    // Tone.jsの準備ができてからシンセサイザーを初期化
+    // また、ユーザーの最初のインタラクションでAudioContextを開始する
+    function initializeAudio() {
+        if (!clickSound && typeof Tone !== 'undefined') {
+            clickSound = new Tone.MembraneSynth({
+                pitchDecay: 0.01, // 音の高さの減衰を速くして「カチッ」という感じに
+                octaves: 2,       // 倍音を調整
+                oscillator: {
+                    type: "sine"  // 基本的な波形
+                },
+                envelope: {
+                    attack: 0.001, // アタックを非常に短く
+                    decay: 0.1,   // ディケイも短めに
+                    sustain: 0,    // サスティンはなし
+                    release: 0.01, // リリースも短く
+                    attackCurve: "exponential"
+                }
+            }).toDestination();
+        }
+    }
+
+    // ボタンクリック音を再生する関数
+    function playButtonClickSound() {
+        if (typeof Tone !== 'undefined') {
+            if (Tone.context.state !== 'running') {
+                Tone.start().then(initializeAudio); // AudioContextを開始し、その後シンセを初期化
+            } else if (!clickSound) {
+                initializeAudio(); // AudioContextが既に実行中の場合は、シンセだけ初期化
+            }
+
+            if (clickSound) {
+                clickSound.triggerAttackRelease("C4", Tone.now()); // C4の音程で即座に再生・停止
+            }
+        }
+    }
+    // 最初のユーザーインタラクションでオーディオを初期化試行するためのイベントリスナー
+    // (playButtonClickSound内でも処理されるが、念のため)
+    document.body.addEventListener('click', () => {
+        if (typeof Tone !== 'undefined' && Tone.context.state !== 'running') {
+            Tone.start().then(initializeAudio);
+        } else if (!clickSound) {
+            initializeAudio();
+        }
+    }, { once: true });
+
+
     // --- データ ---
     const yakitoriMenu={
       "ねぎま":160,"つくね":200,"せせり":160,"肝":200,
@@ -278,7 +330,7 @@
     let answerLocked = false;
     let isThirtySec = false;
     let thirtySecTimeLeft = 0, thirtySecTimerID = null;
-    let isTransitioning = false; // 画面遷移アニメーション中のフラグ
+    let isTransitioning = false; 
 
     // --- 要素 ---
     const qs = document;
@@ -295,9 +347,7 @@
 
     // --- 画面表示制御 ---
     function setActiveScreen(screenElement) {
-        // 全てのスクリーンを非表示にする
         [startScr, modeScr, thirtySecScr, jumpScr, quizScr, endScr].forEach(s => s.classList.remove('active'));
-        // 対象のスクリーンを表示
         if (screenElement) {
             screenElement.classList.add('active');
         }
@@ -308,7 +358,6 @@
         if (isTransitioning) return;
         isTransitioning = true;
 
-        // タイトルと他のボタンをフェードアウト
         startScreenTitle.style.opacity = '0';
         menuButtons.forEach(btn => {
             if (btn !== clickedButton) {
@@ -316,24 +365,19 @@
             }
         });
 
-        // クリックされたボタンを拡大・フェードアウト
-        // 少し遅延させて、他の要素のフェードアウトとタイミングを合わせる
         setTimeout(() => {
             clickedButton.classList.add('animating-out');
-        }, 50); // 50ms delay
+        }, 50); 
 
-        // アニメーション完了後に画面遷移 (CSSのtransition時間と合わせる)
         setTimeout(() => {
-            setActiveScreen(nextScreen); // 新しい画面を表示
-
-            // スタート画面の要素を元に戻す (次回の表示のため)
+            setActiveScreen(nextScreen); 
             startScreenTitle.style.opacity = '1';
             menuButtons.forEach(btn => {
                 btn.classList.remove('hidden-sibling');
-                btn.classList.remove('animating-out'); // アニメーションクラスも除去
+                btn.classList.remove('animating-out'); 
             });
             isTransitioning = false;
-        }, 600); // 0.05s (delay) + 0.4s (button animation) + margin ~ 0.6s
+        }, 600); 
     }
 
 
@@ -344,10 +388,9 @@
       isThirtySec = false;
       animateStartButtonTransition(event.target, modeScr);
     }
-    // 30秒チャレンジボタン
     function choose30Sec(event){
       if (isTransitioning) return;
-      isThirtySec = true; // 30秒チャレンジモードであることを先に設定
+      isThirtySec = true; 
       animateStartButtonTransition(event.target, thirtySecScr);
     }
 
@@ -355,32 +398,29 @@
     function chooseMode(m){
       if (isTransitioning) return;
       mode = m;
-      isThirtySec = false; // 通常モード
-      setActiveScreen(jumpScr); // まずジャンプ画面へ
+      isThirtySec = false; 
+      setActiveScreen(jumpScr); 
       resetJumpAnimation();
       setTimeout(()=>{
-        // jumpScr.classList.remove('active'); // setActiveScreenが処理
-        startGame(); // startGame内でquizScrをactiveにする
+        startGame(); 
       },1100);
     }
     
-    // 30秒チャレンジ：ジャンル選択から開始
     function startThirtySec(type){
       if (isTransitioning) return;
       quizType = type;
       isThirtySec = true;
-      setActiveScreen(jumpScr); // まずジャンプ画面へ
+      setActiveScreen(jumpScr); 
       resetJumpAnimation();
       setTimeout(()=>{
-        // jumpScr.classList.remove('active'); // setActiveScreenが処理
-        startGame(); // startGame内でquizScrをactiveにする
+        startGame(); 
       },1100);
     }
     
     function resetJumpAnimation() {
         const img = document.getElementById('niwatoriImg');
         img.style.animation='none';
-        void img.offsetWidth; // 強制リフロー
+        void img.offsetWidth; 
         img.style.animation='';
     }
 
@@ -392,7 +432,7 @@
       used=[];score=0;wrong=[];
       answerLocked = false;
       
-      setActiveScreen(quizScr); // クイズ画面をアクティブに
+      setActiveScreen(quizScr); 
 
       if(isThirtySec){
         thirtySecTimeLeft = 30;
@@ -404,8 +444,7 @@
           if(thirtySecTimeLeft<=0){
             clearInterval(thirtySecTimerID);
             if(timerID) clearInterval(timerID);
-            // 30秒チャレンジのタイムアウトはshowResult経由ではなく直接終了処理へ
-            showResult(false, true, 0, true); // isOverallTimeout = true
+            showResult(false, true, 0, true); 
           }
         },1000);
         nextThirtySec();
@@ -419,7 +458,7 @@
       if(timerID) clearInterval(timerID);
       answerLocked = false;
       let menu = quizType==='yakitori'?yakitoriMenu:quizType==='otsumami'?otsumamiMenu:drinkMenu;
-      if(used.length===total && total > 0){ // totalが0の場合(アイテムがない場合)は無限ループを避ける
+      if(used.length===total && total > 0){ 
         setActiveScreen(jumpScr);
         resetJumpAnimation();
         setTimeout(()=>{
@@ -427,15 +466,14 @@
         },1100);
         return;
       }
-      if (items.length === 0) { // アイテムがない場合は即終了
+      if (items.length === 0) { 
         finish();
         return;
       }
-      do{q=items[Math.floor(Math.random()*items.length)];}while(used.includes(q) && used.length < items.length); // 全て使用済みなら同じ問題も許可(無限ループ対策)
-      if(used.length >= items.length && mode !== 'all' && used.length >= total) { // 15問モード等で全種類出題済みの場合
+      do{q=items[Math.floor(Math.random()*items.length)];}while(used.includes(q) && used.length < items.length); 
+      if(used.length >= items.length && mode !== 'all' && used.length >= total) { 
           finish(); return;
       }
-
 
       current='0';dis.textContent='0';res.textContent='';res.className='';
       que.textContent=`${q} の値段は？`;
@@ -450,16 +488,14 @@
       answerLocked = false;
       let menu = quizType==='yakitori'?yakitoriMenu:quizType==='otsumami'?otsumamiMenu:drinkMenu;
       
-      if (items.length === 0) { // アイテムがない場合は即終了
+      if (items.length === 0) { 
           if(thirtySecTimerID) clearInterval(thirtySecTimerID);
           showThirtySecEnd();
           return;
       }
 
       const availableItems = items.filter(item => !used.includes(item));
-      if (availableItems.length === 0 && items.length > 0) { // 全問一度は出題済みの場合、usedをリセットして再度選ぶ
-          // used = []; // 30秒チャレンジではusedは正解不正解の記録というより「出題済みリスト」なので、リセットはしない方が良いかも。
-          // 同じ問題が出ても良いルールとする。
+      if (availableItems.length === 0 && items.length > 0) { 
           q=items[Math.floor(Math.random()*items.length)];
       } else {
           q=availableItems.length > 0 ? availableItems[Math.floor(Math.random()*availableItems.length)] : items[Math.floor(Math.random()*items.length)];
@@ -469,11 +505,11 @@
       que.textContent=`${q} の値段は？`;
       pro.textContent=`正解数：${score}`;
       tim.style.display = 'block'; 
-      tim.textContent = thirtySecTimeLeft; // 30秒タイマーを表示
+      tim.textContent = thirtySecTimeLeft; 
     }
 
     // --- タイマー ---
-    function startTimer(){ // 10秒タイマー (通常モード用)
+    function startTimer(){ 
       timeLeft=10;
       if(isThirtySec) { 
           tim.textContent = thirtySecTimeLeft; 
@@ -522,21 +558,19 @@
     }
 
     // --- 結果表示 ---
-    // isOverallTimeout: 30秒チャレンジ全体のタイムアウトかどうかのフラグ
     function showResult(ok, timeout = false, ans = 0, isOverallTimeout = false) {
         let menu = quizType === 'yakitori' ? yakitoriMenu : quizType === 'otsumami' ? otsumamiMenu : drinkMenu;
 
-        if (q && !used.includes(q)) { // 出題された問題を記録 (30秒チャレンジで同じ問題が複数回出てもusedには1回だけ)
+        if (q && !used.includes(q)) { 
             used.push(q);
         }
 
-        if (isOverallTimeout) { // 30秒チャレンジの全体時間切れ
-            // 何も表示せず、即座に終了処理へ
+        if (isOverallTimeout) { 
             showThirtySecEnd();
             return;
         }
         
-        if (timeout && !isThirtySec) { // 通常モードの問題ごとの時間切れ
+        if (timeout && !isThirtySec) { 
             const correct = menu[q];
             res.innerHTML = `<span class="result-icon">✖</span>時間切れ！ 正解は ${correct} 円です`;
             res.className = 'result-ng';
@@ -544,11 +578,11 @@
         } else if (ok) {
             res.innerHTML = '<span class="result-icon">⭕</span>正解！';
             res.className = 'result-ok';
-        } else if (!isThirtySec || (isThirtySec && !timeout)) { // 通常モードの不正解 or 30秒チャレンジ中の不正解
+        } else if (!isThirtySec || (isThirtySec && !timeout)) { 
              if (ans !== undefined) {
                 res.innerHTML = `<span class="result-icon">✖</span>不正解！ 正解は ${ans} 円です`;
              } else {
-                res.innerHTML = `<span class="result-icon">✖</span>不正解！`; // 正解の値段が不明な場合
+                res.innerHTML = `<span class="result-icon">✖</span>不正解！`; 
              }
             res.className = 'result-ng';
         }
@@ -558,7 +592,7 @@
         setTimeout(() => {
             answerLocked = false;
             if (isThirtySec) {
-                if (thirtySecTimeLeft <= 0) { // 念のため再度チェック
+                if (thirtySecTimeLeft <= 0) { 
                     showThirtySecEnd();
                 } else {
                     nextThirtySec();
@@ -573,7 +607,7 @@
     // --- 30秒終了時のエンド画面表示 ---
     function showThirtySecEnd(){
       if(thirtySecTimerID) clearInterval(thirtySecTimerID);
-      if(timerID) clearInterval(timerID); // 念のため問題タイマーも
+      if(timerID) clearInterval(timerID); 
       setActiveScreen(jumpScr);
       resetJumpAnimation();
       setTimeout(()=>{
@@ -594,7 +628,6 @@
       const totalQuestionsToConsider = isThirtySec ? score : (mode === 'all' ? items.length : Math.min(total, items.length));
       const rate = totalQuestionsToConsider > 0 ? (score / totalQuestionsToConsider) * 100 : 0;
 
-
       let comment;
        if (isThirtySec) {
           if (score >= 15) comment = '早押しマスター！\n素晴らしい！';
@@ -602,22 +635,22 @@
           else if (score >= 5)  comment = '良いペース！\nもっといける！';
           else comment = '挑戦ありがとう！\nまた遊んでね！';
       } else {
-          if (items.length === 0) { // データがない場合
+          if (items.length === 0) { 
               comment = 'おっと！\n問題データがないみたい…';
-          } else if (score === totalQuestionsToConsider && score > 0) { // 全問正解の場合
+          } else if (score === totalQuestionsToConsider && score > 0) { 
               comment = '焼き鳥奉行！\nパーフェクト！';
           } else if (rate >= 90 && score > 0)  comment = 'ベテラン焼き師！\nあと一歩！';
           else if (rate >= 70 && score > 0)  comment = '串打ち職人見習い！\nいい線いってる！';
           else if (rate >= 50 && score > 0)  comment = '焼き鳥好き\nレベルアップ中！';
           else if (rate >= 30 && score > 0)  comment = 'これからが修行の本番！';
-          else if (used.length === 0 && total > 0) comment = '挑戦待ってるよ！'; // 1問も答えずに終了した場合
+          else if (used.length === 0 && total > 0) comment = '挑戦待ってるよ！'; 
           else comment = '修行あるのみ！\nまずはメニューを覚えよう';
       }
       endHeading.innerHTML = comment.replace(/\n/g,'<br>');
 
       if(wrong.length){
         let html = `<strong>間違えた問題</strong><br>`;
-        html += wrong.map(w => `${w[0]} (正解 ${w[1]} 円）`).join('<br>');
+        html += wrong.map(w => `${w[0]} (あなたの解答: ${w[2] !== undefined ? w[2] : '未入力'})：正解 ${w[1]} 円`).join('<br>');
         wrongBox.innerHTML = html;
         wrongBox.style.display = 'block';
       }else{
@@ -638,7 +671,7 @@
       }else{
         scoreTxt.innerHTML = `${totalQuestionsToConsider > 0 ? totalQuestionsToConsider : total}問中 ${score}問正解！`;
       }
-      closeMenu(); // メニューオーバーレイが開いていれば閉じる
+      closeMenu(); 
       setActiveScreen(endScr);
     }
 
@@ -654,22 +687,23 @@
     }
 
     function returnToStart(){
-      if (isTransitioning) return; // 遷移中は戻る操作を無効化
+      if (isTransitioning) return; 
       closeMenu();
-      // アニメーション関連のクラスやスタイルをリセット
       startScreenTitle.style.opacity = '1';
       menuButtons.forEach(btn => {
           btn.classList.remove('hidden-sibling');
           btn.classList.remove('animating-out');
-          btn.style.transform = ''; // スケールをリセット
-          btn.style.opacity = '';   // 透明度をリセット
+          btn.style.transform = ''; 
+          btn.style.opacity = '';   
       });
       setActiveScreen(startScr);
     }
 
-    // 初期状態ではスタート画面を表示
     window.onload = () => {
         setActiveScreen(startScr);
+        // オーディオコンテキストの初期化を試みる（ユーザーインタラクションが必要な場合があるため、
+        // playButtonClickSound内でもTone.start()を呼び出しています）
+        initializeAudio(); 
     };
   </script>
 </body>
