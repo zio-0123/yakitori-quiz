@@ -650,7 +650,7 @@
 
       if(wrong.length){
         let html = `<strong>間違えた問題</strong><br>`;
-        html += wrong.map(w => `${w[0]} (あなたの解答: ${w[2] !== undefined ? w[2] : '未入力'})：正解 ${w[1]} 円`).join('<br>');
+        html += wrong.map(w => `${w[0]}：正解 ${w[1]} 円`).join('<br>');
         wrongBox.innerHTML = html;
         wrongBox.style.display = 'block';
       }else{
@@ -659,7 +659,7 @@
         } else if (isThirtySec && score === 0) {
             wrongBox.innerHTML = "今回は残念！また挑戦してね！";
         } else if (!isThirtySec && score === 0 && used.length > 0) {
-            wrongBox.innerHTML = "全問不正解でした…頑張ろう！";
+            wrongBox.innerHTML = "全問不正解…頑張ろう！";
         } else if (score > 0 || (isThirtySec && score > 0) || (!isThirtySec && used.length === 0)) {
             wrongBox.innerHTML = (used.length === 0 && !isThirtySec) ? "挑戦しませんでした。" : "全問正解おめでとう！";
         } else {
