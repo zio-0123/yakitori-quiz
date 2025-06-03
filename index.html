@@ -5,7 +5,6 @@
   <meta name="viewport"
         content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
   <title>お値段クイズ</title>
-  <!-- Google Fonts: 筆フォント -->
   <link href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@700&family=Yuji+Boku&display=swap" rel="stylesheet">
   <style>
     html,body{
@@ -16,19 +15,52 @@
       background:#fffaf0;
       text-align:center;
       font-family: 'Yuji Boku', 'Kiwi Maru', serif, 'Arial', sans-serif;
+      overflow: hidden; /* スクロールバー防止 */
     }
-    .screen{position:fixed;inset:0;display:none;flex-direction:column;justify-content:center;align-items:center;}
-    .screen.active{display:flex;}
+    .screen{
+        position:fixed;
+        inset:0;
+        display:none; /* 初期状態は非表示 */
+        flex-direction:column;
+        justify-content:center;
+        align-items:center;
+        opacity: 0; /* アニメーション用 */
+        transition: opacity 0.3s ease-in-out; /* フェードイン/アウト */
+        background-color: #fffaf0; /* 背景色をスクリーン自体に持たせる */
+    }
+    .screen.active{
+        display:flex;
+        opacity: 1;
+    }
     /* ==== スタート/モード選択 ==== */
-    #startScreen h1{font-size:34px;margin:32px 0 38px;color:#111;letter-spacing:2px;}
-    #menuSel{display:flex;flex-direction:column;gap:20px;}
+    #startScreen h1{
+        font-size:34px;margin:32px 0 38px;color:#111;letter-spacing:2px;
+        transition: opacity 0.3s ease-out;
+    }
+    #menuSel{
+        display:flex;flex-direction:column;gap:20px;
+        width: 200px; /* ボタンの幅に合わせる */
+        margin: 0 auto;
+    }
     .menu-btn{
-      font-size:28px;padding:20px 0;width:200px;margin:0 auto;
+      font-size:28px;padding:20px 0;width:100%; /* #menuSelの幅に合わせる */
       background:#fff;border:3px solid #d2691e;border-radius:20px;
       color:#8b4513;font-family:'Yuji Boku','Kiwi Maru',serif;
-      cursor:pointer;transition:.1s;box-shadow:0 2px 8px #0001;
+      cursor:pointer;transition: background-color .1s, transform 0.4s ease-out, opacity 0.4s ease-out; /* アニメーション用 */
+      box-shadow:0 2px 8px #0001;
+      transform-origin: center;
     }
     .menu-btn:active{background:#ffe4c4;}
+    .menu-btn.animating-out { /* スタート画面ボタンアニメーション用 */
+        transform: scale(1.2);
+        opacity: 0;
+    }
+    .menu-btn.hidden-sibling { /* スタート画面で非表示にする他のボタン */
+        opacity: 0;
+        pointer-events: none; /* クリック不可に */
+    }
+
+
     #modeScreen, #thirtySecSel{gap:20px;}
     .mode-btn{
       font-size:22px;padding:18px 0;width:180px;margin:0 auto;
@@ -39,10 +71,11 @@
     .mode-btn:active{background:#a0522d;}
     /* ==== 鳥ジャンプ ==== */
     #jumpScreen img{
-      width:130px;height:auto;
+      width:130px;height:130px; /* Placeholderに合わせるため高さを指定 */
       user-drag:none;-webkit-user-drag:none;
       pointer-events:none;
       animation:jump 1s cubic-bezier(.46,.03,.52,.96) 3;
+      border-radius: 8px; /* プレースホルダー画像にも角丸を適用 */
     }
     @keyframes jump{
       0%   {transform:translateY(0);}
@@ -101,6 +134,11 @@
     #menuOverlay{
       position:absolute;inset:0;background:rgba(0,0,0,.5);
       display:none;justify-content:center;align-items:center;z-index:10;
+       opacity: 0; transition: opacity 0.3s ease-in-out;
+    }
+    #menuOverlay.active {
+        display: flex;
+        opacity: 1;
     }
     #menuOverlay div{
       background:#fff;padding:20px;border-radius:12px;text-align:center;
@@ -159,24 +197,20 @@
   </style>
 </head>
 <body>
-  <!-- スタート画面 -->
-  <div id="startScreen" class="screen active">
-    <h1>お値段クイズ</h1>
+  <div id="startScreen" class="screen"> <h1>お値段クイズ</h1>
     <div id="menuSel">
-      <button class="menu-btn" onclick="chooseMenu('yakitori')">焼鳥</button>
-      <button class="menu-btn" onclick="chooseMenu('otsumami')">おつまみ</button>
-      <button class="menu-btn" onclick="chooseMenu('drink')">ドリンク</button>
-      <button class="menu-btn" onclick="choose30Sec()">30秒チャレンジ</button>
+      <button class="menu-btn" onclick="chooseMenu('yakitori', event)">焼鳥</button>
+      <button class="menu-btn" onclick="chooseMenu('otsumami', event)">おつまみ</button>
+      <button class="menu-btn" onclick="chooseMenu('drink', event)">ドリンク</button>
+      <button class="menu-btn" onclick="choose30Sec(event)">30秒チャレンジ</button>
     </div>
   </div>
-  <!-- モード選択画面 -->
   <div id="modeScreen" class="screen">
     <button class="back-btn" onclick="returnToStart()">戻る</button>
     <div style="height:20px"></div>
     <button class="mode-btn" onclick="chooseMode('all')">全問チャレンジ</button>
     <button class="mode-btn" onclick="chooseMode('15')">15問チャレンジ</button>
   </div>
-  <!-- 30秒チャレンジ ジャンル選択画面 -->
   <div id="thirtySecSel" class="screen">
     <button class="back-btn" onclick="returnToStart()">戻る</button>
     <div style="height:20px"></div>
@@ -184,11 +218,9 @@
     <button class="mode-btn" onclick="startThirtySec('otsumami')">おつまみ</button>
     <button class="mode-btn" onclick="startThirtySec('drink')">ドリンク</button>
   </div>
-  <!-- 鳥ジャンプアニメ画面 -->
   <div id="jumpScreen" class="screen">
-    <img id="niwatoriImg" src="niwatori.jpg" alt="鳥" draggable="false">
+    <img id="niwatoriImg" src="https://placehold.co/130x130/FFF0E0/D2691E?text=🐔&font=noto-sans-jp" alt="鳥" draggable="false" onerror="this.src='https://placehold.co/130x130/EEEEEE/AAAAAA?text=画像読込エラー&font=noto-sans-jp'; this.alt='画像読み込みエラー';">
   </div>
-  <!-- クイズ画面 -->
   <div id="quizScreen" class="screen">
     <button class="menubtn" onclick="openMenu()">☰</button>
     <div id="progress"></div>
@@ -206,16 +238,13 @@
       <button onclick="addNumber(1)">1</button><button onclick="addNumber(2)">2</button><button onclick="addNumber(3)">3</button>
       <button class="zero" onclick="addNumber(0)">0</button>
     </div>
-    <!-- メニューオーバーレイ -->
-    <div id="menuOverlay">
-      <div>
+    <div id="menuOverlay"> <div>
         <button onclick="returnToStart()">スタート画面に戻る</button><br>
         <button onclick="closeMenu()">続ける</button><br>
         <button onclick="endGameEarly()">終わる</button>
       </div>
     </div>
   </div>
-  <!-- 終了画面 -->
   <div id="endScreen" class="screen">
     <div id="endHeading"></div>
     <div id="wrongBox"></div>
@@ -244,11 +273,12 @@
     };
 
     // --- 状態 ---
-    let quizType = "yakitori";  // yakitori/otsumami/drink
+    let quizType = "yakitori";
     let mode, total, items, used, q, current='0', score, timerID, timeLeft, wrong=[];
     let answerLocked = false;
     let isThirtySec = false;
     let thirtySecTimeLeft = 0, thirtySecTimerID = null;
+    let isTransitioning = false; // 画面遷移アニメーション中のフラグ
 
     // --- 要素 ---
     const qs = document;
@@ -259,53 +289,99 @@
       menuOvl=qs.getElementById('menuOverlay'),wrongBox=qs.getElementById('wrongBox'),
       modeScr=qs.getElementById('modeScreen'),jumpScr=qs.getElementById('jumpScreen'),
       endHeading=qs.getElementById('endHeading'),thirtySecScr=qs.getElementById('thirtySecSel');
+    const startScreenTitle = startScr.querySelector('h1');
+    const menuButtons = Array.from(startScr.querySelectorAll('.menu-btn'));
+
+
+    // --- 画面表示制御 ---
+    function setActiveScreen(screenElement) {
+        // 全てのスクリーンを非表示にする
+        [startScr, modeScr, thirtySecScr, jumpScr, quizScr, endScr].forEach(s => s.classList.remove('active'));
+        // 対象のスクリーンを表示
+        if (screenElement) {
+            screenElement.classList.add('active');
+        }
+    }
+    
+    // --- スタート画面ボタンアニメーション遷移 ---
+    function animateStartButtonTransition(clickedButton, nextScreen) {
+        if (isTransitioning) return;
+        isTransitioning = true;
+
+        // タイトルと他のボタンをフェードアウト
+        startScreenTitle.style.opacity = '0';
+        menuButtons.forEach(btn => {
+            if (btn !== clickedButton) {
+                btn.classList.add('hidden-sibling');
+            }
+        });
+
+        // クリックされたボタンを拡大・フェードアウト
+        // 少し遅延させて、他の要素のフェードアウトとタイミングを合わせる
+        setTimeout(() => {
+            clickedButton.classList.add('animating-out');
+        }, 50); // 50ms delay
+
+        // アニメーション完了後に画面遷移 (CSSのtransition時間と合わせる)
+        setTimeout(() => {
+            setActiveScreen(nextScreen); // 新しい画面を表示
+
+            // スタート画面の要素を元に戻す (次回の表示のため)
+            startScreenTitle.style.opacity = '1';
+            menuButtons.forEach(btn => {
+                btn.classList.remove('hidden-sibling');
+                btn.classList.remove('animating-out'); // アニメーションクラスも除去
+            });
+            isTransitioning = false;
+        }, 600); // 0.05s (delay) + 0.4s (button animation) + margin ~ 0.6s
+    }
+
 
     // --- スタート画面→モード選択 ---
-    function chooseMenu(type){
+    function chooseMenu(type, event){
+      if (isTransitioning) return;
       quizType = type;
       isThirtySec = false;
-      screenJump(startScr,modeScr);
+      animateStartButtonTransition(event.target, modeScr);
     }
     // 30秒チャレンジボタン
-    function choose30Sec(){
-      screenJump(startScr,thirtySecScr);
+    function choose30Sec(event){
+      if (isTransitioning) return;
+      isThirtySec = true; // 30秒チャレンジモードであることを先に設定
+      animateStartButtonTransition(event.target, thirtySecScr);
     }
-    // 30秒チャレンジ：ジャンル選択
-    function startThirtySec(type){
-      quizType = type;
-      isThirtySec = true;
-      screenJump(thirtySecScr,jumpScr,() => {
-        setTimeout(()=>{
-          jumpScr.classList.remove('active');
-          startGame();
-        },1100);
-      });
-    }
+
     // --- モード選択→鳥ジャンプ→クイズ ---
     function chooseMode(m){
+      if (isTransitioning) return;
       mode = m;
-      isThirtySec = false;
-      screenJump(modeScr,jumpScr,() => {
-        setTimeout(()=>{
-          jumpScr.classList.remove('active');
-          startGame();
-        },1100);
-      });
-    }
-    // --- 汎用:画面遷移+鳥アニメ ---
-    function screenJump(from,to,cb){
-      from.classList.remove('active');
-      jumpScr.classList.add('active');
-      // アニメーション画像再生強制
-      const img = document.getElementById('niwatoriImg');
-      img.style.animation='none';
-      void img.offsetWidth;
-      img.style.animation='';
+      isThirtySec = false; // 通常モード
+      setActiveScreen(jumpScr); // まずジャンプ画面へ
+      resetJumpAnimation();
       setTimeout(()=>{
-        jumpScr.classList.remove('active');
-        to.classList.add('active');
-        if(cb) cb();
+        // jumpScr.classList.remove('active'); // setActiveScreenが処理
+        startGame(); // startGame内でquizScrをactiveにする
       },1100);
+    }
+    
+    // 30秒チャレンジ：ジャンル選択から開始
+    function startThirtySec(type){
+      if (isTransitioning) return;
+      quizType = type;
+      isThirtySec = true;
+      setActiveScreen(jumpScr); // まずジャンプ画面へ
+      resetJumpAnimation();
+      setTimeout(()=>{
+        // jumpScr.classList.remove('active'); // setActiveScreenが処理
+        startGame(); // startGame内でquizScrをactiveにする
+      },1100);
+    }
+    
+    function resetJumpAnimation() {
+        const img = document.getElementById('niwatoriImg');
+        img.style.animation='none';
+        void img.offsetWidth; // 強制リフロー
+        img.style.animation='';
     }
 
     // --- ゲーム開始 ---
@@ -315,19 +391,21 @@
       items=Object.keys(menu);
       used=[];score=0;wrong=[];
       answerLocked = false;
-      endScr.classList.remove('active');
-      quizScr.classList.add('active');
+      
+      setActiveScreen(quizScr); // クイズ画面をアクティブに
+
       if(isThirtySec){
         thirtySecTimeLeft = 30;
         tim.textContent = thirtySecTimeLeft;
-        // 30秒のタイマー
+        if(thirtySecTimerID) clearInterval(thirtySecTimerID);
         thirtySecTimerID = setInterval(()=>{
           thirtySecTimeLeft--;
           tim.textContent = thirtySecTimeLeft;
           if(thirtySecTimeLeft<=0){
             clearInterval(thirtySecTimerID);
-            clearInterval(timerID);
-            showThirtySecEnd();
+            if(timerID) clearInterval(timerID);
+            // 30秒チャレンジのタイムアウトはshowResult経由ではなく直接終了処理へ
+            showResult(false, true, 0, true); // isOverallTimeout = true
           }
         },1000);
         nextThirtySec();
@@ -338,41 +416,84 @@
 
     // --- 通常モード出題 ---
     function nextQuestion(){
-      clearInterval(timerID);
+      if(timerID) clearInterval(timerID);
       answerLocked = false;
       let menu = quizType==='yakitori'?yakitoriMenu:quizType==='otsumami'?otsumamiMenu:drinkMenu;
-      if(used.length===total){screenJump(quizScr,jumpScr,()=>{setTimeout(()=>{jumpScr.classList.remove('active');finish();},1100)});return;}
-      do{q=items[Math.floor(Math.random()*items.length)];}while(used.includes(q));
+      if(used.length===total && total > 0){ // totalが0の場合(アイテムがない場合)は無限ループを避ける
+        setActiveScreen(jumpScr);
+        resetJumpAnimation();
+        setTimeout(()=>{
+            finish();
+        },1100);
+        return;
+      }
+      if (items.length === 0) { // アイテムがない場合は即終了
+        finish();
+        return;
+      }
+      do{q=items[Math.floor(Math.random()*items.length)];}while(used.includes(q) && used.length < items.length); // 全て使用済みなら同じ問題も許可(無限ループ対策)
+      if(used.length >= items.length && mode !== 'all' && used.length >= total) { // 15問モード等で全種類出題済みの場合
+          finish(); return;
+      }
+
+
       current='0';dis.textContent='0';res.textContent='';res.className='';
       que.textContent=`${q} の値段は？`;
       pro.textContent=`${used.length+1}/${total}問目`;
+      tim.style.display = 'block';
       startTimer();
     }
 
     // --- 30秒チャレンジ用出題 ---
     function nextThirtySec(){
-      clearInterval(timerID);
+      if(timerID) clearInterval(timerID);
       answerLocked = false;
       let menu = quizType==='yakitori'?yakitoriMenu:quizType==='otsumami'?otsumamiMenu:drinkMenu;
-      // usedはshowResultでしか増やさない
-      do{q=items[Math.floor(Math.random()*items.length)];}while(used.includes(q));
+      
+      if (items.length === 0) { // アイテムがない場合は即終了
+          if(thirtySecTimerID) clearInterval(thirtySecTimerID);
+          showThirtySecEnd();
+          return;
+      }
+
+      const availableItems = items.filter(item => !used.includes(item));
+      if (availableItems.length === 0 && items.length > 0) { // 全問一度は出題済みの場合、usedをリセットして再度選ぶ
+          // used = []; // 30秒チャレンジではusedは正解不正解の記録というより「出題済みリスト」なので、リセットはしない方が良いかも。
+          // 同じ問題が出ても良いルールとする。
+          q=items[Math.floor(Math.random()*items.length)];
+      } else {
+          q=availableItems.length > 0 ? availableItems[Math.floor(Math.random()*availableItems.length)] : items[Math.floor(Math.random()*items.length)];
+      }
+
       current='0';dis.textContent='0';res.textContent='';res.className='';
       que.textContent=`${q} の値段は？`;
       pro.textContent=`正解数：${score}`;
-      // 各問題のタイマーは無効、30秒だけ管理
+      tim.style.display = 'block'; 
+      tim.textContent = thirtySecTimeLeft; // 30秒タイマーを表示
     }
 
     // --- タイマー ---
-    function startTimer(){
-      timeLeft=10;tim.textContent=timeLeft;
+    function startTimer(){ // 10秒タイマー (通常モード用)
+      timeLeft=10;
+      if(isThirtySec) { 
+          tim.textContent = thirtySecTimeLeft; 
+          return; 
+      }
+      tim.textContent=timeLeft;
+      if(timerID) clearInterval(timerID);
       timerID=setInterval(()=>{timeLeft--;tim.textContent=timeLeft;
-        if(timeLeft===0){clearInterval(timerID);showResult(false,true);}},1000);
+        if(timeLeft<=0){clearInterval(timerID);showResult(false,true);}},1000);
     }
 
     // --- 入力 ---
     function addNumber(n){
       if(answerLocked) return;
-      current=(current==='0')?''+n:(current.length<4?current+n:current);
+      if(current.length >= 4 && n !== 0) return; 
+      if(current === '0' && n === 0 && current.length === 1) return; 
+      if(current.length === 4 && n === 0 && current !== '0') return; 
+
+      current=(current==='0')?''+n:current+n;
+      if(current.length > 4) current = current.substring(0,4); 
       dis.textContent=current;
     }
     function clearAnswer(){if(answerLocked) return;current='0';dis.textContent='0';}
@@ -380,110 +501,176 @@
     // --- 判定 ---
     function checkAnswer(){
       if(answerLocked) return;
-      if(current==='0'){
+      if(current==='0' && dis.textContent === '0'){
         res.innerHTML='<span class="result-icon">✖</span>解答を入力してください';
         res.className='result-ng';
-        // ロックしない
         return;
       }
-      answerLocked = true;
-      clearInterval(timerID);
+      answerLocked = true; 
+      if(!isThirtySec && timerID) clearInterval(timerID); 
+
       let menu = quizType==='yakitori'?yakitoriMenu:quizType==='otsumami'?otsumamiMenu:drinkMenu;
       const ans=menu[q];
-      if(parseInt(current)===ans){score++;showResult(true,false,ans);}
-      else{wrong.push([q,ans]);showResult(false,false,ans);}
+      if(parseInt(current)===ans){
+        score++;
+        showResult(true,false,ans);
+      }
+      else{
+        if (q && ans !== undefined) wrong.push([q,ans,current]);
+        showResult(false,false,ans);
+      }
     }
 
     // --- 結果表示 ---
-    function showResult(ok,timeout=false,ans=0){
-      let menu = quizType==='yakitori'?yakitoriMenu:quizType==='otsumami'?otsumamiMenu:drinkMenu;
-      used.push(q); // 実際に解答したもののみカウント
-      if(timeout){
-        const correct = menu[q];
-        res.innerHTML=`<span class="result-icon">✖</span>時間切れ！ 正解は ${correct} 円です`;
-        res.className='result-ng';
-        wrong.push([q,correct]);
-      }
-      else if(ok){
-        res.innerHTML='<span class="result-icon">⭕</span>正解！';
-        res.className='result-ok';
-      }
-      else{
-        res.innerHTML=`<span class="result-icon">✖</span>不正解！ 正解は ${ans} 円です`;
-        res.className='result-ng';
-      }
-      setTimeout(()=>{
-        if(isThirtySec && thirtySecTimeLeft<=0){
-          showThirtySecEnd();
-        }else{
-          isThirtySec ? nextThirtySec() : nextQuestion();
+    // isOverallTimeout: 30秒チャレンジ全体のタイムアウトかどうかのフラグ
+    function showResult(ok, timeout = false, ans = 0, isOverallTimeout = false) {
+        let menu = quizType === 'yakitori' ? yakitoriMenu : quizType === 'otsumami' ? otsumamiMenu : drinkMenu;
+
+        if (q && !used.includes(q)) { // 出題された問題を記録 (30秒チャレンジで同じ問題が複数回出てもusedには1回だけ)
+            used.push(q);
         }
-      },800);
+
+        if (isOverallTimeout) { // 30秒チャレンジの全体時間切れ
+            // 何も表示せず、即座に終了処理へ
+            showThirtySecEnd();
+            return;
+        }
+        
+        if (timeout && !isThirtySec) { // 通常モードの問題ごとの時間切れ
+            const correct = menu[q];
+            res.innerHTML = `<span class="result-icon">✖</span>時間切れ！ 正解は ${correct} 円です`;
+            res.className = 'result-ng';
+            if (q && correct !== undefined && !wrong.find(w => w[0] === q)) wrong.push([q, correct, '時間切れ']);
+        } else if (ok) {
+            res.innerHTML = '<span class="result-icon">⭕</span>正解！';
+            res.className = 'result-ok';
+        } else if (!isThirtySec || (isThirtySec && !timeout)) { // 通常モードの不正解 or 30秒チャレンジ中の不正解
+             if (ans !== undefined) {
+                res.innerHTML = `<span class="result-icon">✖</span>不正解！ 正解は ${ans} 円です`;
+             } else {
+                res.innerHTML = `<span class="result-icon">✖</span>不正解！`; // 正解の値段が不明な場合
+             }
+            res.className = 'result-ng';
+        }
+
+        const delay = (ok || timeout) ? 800 : 1200;
+
+        setTimeout(() => {
+            answerLocked = false;
+            if (isThirtySec) {
+                if (thirtySecTimeLeft <= 0) { // 念のため再度チェック
+                    showThirtySecEnd();
+                } else {
+                    nextThirtySec();
+                }
+            } else {
+                nextQuestion();
+            }
+        }, delay);
     }
+
 
     // --- 30秒終了時のエンド画面表示 ---
     function showThirtySecEnd(){
-      quizScr.classList.remove('active');
-      finish();
+      if(thirtySecTimerID) clearInterval(thirtySecTimerID);
+      if(timerID) clearInterval(timerID); // 念のため問題タイマーも
+      setActiveScreen(jumpScr);
+      resetJumpAnimation();
+      setTimeout(()=>{
+          finish();
+      },1100);
     }
 
     // --- メニューオーバーレイ ---
-    function openMenu(){menuOvl.style.display='flex';}
-    function closeMenu(){menuOvl.style.display='none';}
+    function openMenu(){ menuOvl.classList.add('active'); }
+    function closeMenu(){ menuOvl.classList.remove('active'); }
 
     // --- 終了処理 ---
     function finish(){
-      clearInterval(timerID);
-      clearInterval(thirtySecTimerID);
-      // 正答率によるコメント
-      const answered = used.length;
-      const rate     = answered ? (score / answered) * 100 : 0;
+      if(timerID) clearInterval(timerID);
+      if(thirtySecTimerID) clearInterval(thirtySecTimerID);
+      
+      const answeredQuestions = isThirtySec ? score : used.length; 
+      const totalQuestionsToConsider = isThirtySec ? score : (mode === 'all' ? items.length : Math.min(total, items.length));
+      const rate = totalQuestionsToConsider > 0 ? (score / totalQuestionsToConsider) * 100 : 0;
+
+
       let comment;
-      if      (rate === 100) comment = '焼き鳥奉行！\nパーフェクト！';
-      else if (rate >= 90)   comment = 'ベテラン焼き師！\nあと一歩！';
-      else if (rate >= 70)   comment = '串打ち職人見習い！\nいい線いってる！';
-      else if (rate >= 50)   comment = '焼き鳥好き\nレベルアップ中！';
-      else if (rate >= 30)   comment = 'これからが修行の本番！';
-      else                   comment = '修行あるのみ！\nまずはメニューを覚えよう';
+       if (isThirtySec) {
+          if (score >= 15) comment = '早押しマスター！\n素晴らしい！';
+          else if (score >= 10) comment = 'かなりの速さ！\nお見事！';
+          else if (score >= 5)  comment = '良いペース！\nもっといける！';
+          else comment = '挑戦ありがとう！\nまた遊んでね！';
+      } else {
+          if (items.length === 0) { // データがない場合
+              comment = 'おっと！\n問題データがないみたい…';
+          } else if (score === totalQuestionsToConsider && score > 0) { // 全問正解の場合
+              comment = '焼き鳥奉行！\nパーフェクト！';
+          } else if (rate >= 90 && score > 0)  comment = 'ベテラン焼き師！\nあと一歩！';
+          else if (rate >= 70 && score > 0)  comment = '串打ち職人見習い！\nいい線いってる！';
+          else if (rate >= 50 && score > 0)  comment = '焼き鳥好き\nレベルアップ中！';
+          else if (rate >= 30 && score > 0)  comment = 'これからが修行の本番！';
+          else if (used.length === 0 && total > 0) comment = '挑戦待ってるよ！'; // 1問も答えずに終了した場合
+          else comment = '修行あるのみ！\nまずはメニューを覚えよう';
+      }
       endHeading.innerHTML = comment.replace(/\n/g,'<br>');
 
-      // 間違いリスト
       if(wrong.length){
         let html = `<strong>間違えた問題</strong><br>`;
-        html += wrong.map(w => `${w[0]}：正解 ${w[1]} 円`).join('<br>');
+        html += wrong.map(w => `${w[0]} (正解 ${w[1]} 円）`).join('<br>');
         wrongBox.innerHTML = html;
+        wrongBox.style.display = 'block';
       }else{
-        wrongBox.innerHTML = "";
+        if (items.length === 0) {
+             wrongBox.innerHTML = "問題がありませんでした。";
+        } else if (isThirtySec && score === 0) {
+            wrongBox.innerHTML = "今回は残念！また挑戦してね！";
+        } else if (!isThirtySec && score === 0 && used.length > 0) {
+            wrongBox.innerHTML = "全問不正解でした…頑張ろう！";
+        } else if (score > 0 || (isThirtySec && score > 0) || (!isThirtySec && used.length === 0)) {
+            wrongBox.innerHTML = (used.length === 0 && !isThirtySec) ? "挑戦しませんでした。" : "全問正解おめでとう！";
+        } else {
+            wrongBox.innerHTML = "間違いはありませんでした！";
+        }
       }
       if(isThirtySec){
-        scoreTxt.innerHTML = `30秒で${score}問正解！`;
+        scoreTxt.innerHTML = `30秒で ${score} 問正解！`;
       }else{
-        scoreTxt.innerHTML = `${total}問中${score}問正解！`;
+        scoreTxt.innerHTML = `${totalQuestionsToConsider > 0 ? totalQuestionsToConsider : total}問中 ${score}問正解！`;
       }
-      menuOvl.style.display = 'none';
-      endScr.classList.add('active');
-      quizScr.classList.remove('active');
+      closeMenu(); // メニューオーバーレイが開いていれば閉じる
+      setActiveScreen(endScr);
     }
+
     function endGameEarly(){
-      clearInterval(timerID);
-      clearInterval(thirtySecTimerID);
-      screenJump(quizScr,jumpScr,()=>{setTimeout(()=>{jumpScr.classList.remove('active');finish();},1100)});
+      if(timerID) clearInterval(timerID);
+      if(thirtySecTimerID) clearInterval(thirtySecTimerID);
+      closeMenu();
+      setActiveScreen(jumpScr);
+      resetJumpAnimation();
+      setTimeout(()=>{
+          finish(); 
+      },1100);
     }
+
     function returnToStart(){
-      menuOvl.style.display='none';
-      endScr.classList.remove('active');
-      modeScr.classList.remove('active');
-      thirtySecScr.classList.remove('active');
-      quizScr.classList.remove('active');
-      jumpScr.classList.remove('active');
-      startScr.classList.add('active');
+      if (isTransitioning) return; // 遷移中は戻る操作を無効化
+      closeMenu();
+      // アニメーション関連のクラスやスタイルをリセット
+      startScreenTitle.style.opacity = '1';
+      menuButtons.forEach(btn => {
+          btn.classList.remove('hidden-sibling');
+          btn.classList.remove('animating-out');
+          btn.style.transform = ''; // スケールをリセット
+          btn.style.opacity = '';   // 透明度をリセット
+      });
+      setActiveScreen(startScr);
     }
+
+    // 初期状態ではスタート画面を表示
+    window.onload = () => {
+        setActiveScreen(startScr);
+    };
   </script>
-  <div style="display:none">
-    <script language="javascript" type="text/javascript" src="//counter1.fc2.com/counter.php?id=40372540&main=1"></script>
-    <noscript>
-      <img src="//counter1.fc2.com/counter_img.php?id=40372540&main=1" style="display:none;">
-    </noscript>
-  </div>
 </body>
 </html>
